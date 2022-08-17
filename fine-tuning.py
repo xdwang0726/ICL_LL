@@ -12,15 +12,15 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification
 
 
-def load_data(dataset, k, seed):
-    data = []
-    data_path = os.path.join("data", dataset, "{}_{}_{}_train.jsonl".format(dataset, k, seed))
-
-    with open(data_path, "r") as f:
-        for line in f:
-            dp = json.loads(line)
-            data.append(dp)
-    return data
+# def load_data(dataset, k, seed):
+#     data = []
+#     data_path = os.path.join("data", dataset, "{}_{}_{}_train.jsonl".format(dataset, k, seed))
+#
+#     with open(data_path, "r") as f:
+#         for line in f:
+#             dp = json.loads(line)
+#             data.append(dp)
+#     return data
 
 
 def load_label(dataset):
@@ -36,20 +36,22 @@ def load_label(dataset):
 
 
 class ICLData(Dataset):
-    def __int__(self, dataset, k, seed):
-        self.dataset = dataset
-        self.k = k
-        self.seed = seed
-        data = load_data(self.dataset, self.k, self.seed)
+    def __init__(self, data_path):
+
+        if not os.path.isdir(data_path):
+            raise ValueError('Invalid `path` variable! Needs to be a directory')
+
         self.texts = []
         self.labels = []
-        for dp in data:
-            self.texts.append(dp['input'])
-            self.labels.append(dp['output'])
-        self.num_examples = len(self.texts)
+
+        with open(data_path, "r") as f:
+            for line in f:
+                dp = json.loads(line)
+                self.texts.append(dp["input"])
+                self.labels.append(dp["output"])
 
     def __len__(self):
-        return self.num_examples
+        return len(self.texts)
 
     def __getitem__(self, item):
         return {'text': self.texts[item], 'label': self.labels[item]}
@@ -71,7 +73,7 @@ class Gpt2ClassificationCollator(object):
         return inputs
 
 
-def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
+def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     model.train()
     true_labels = []
     predictions_labels = []
@@ -98,7 +100,18 @@ def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1
         predictions_labels += logits.argmax(axis=-1).flatten().tolist()
     avg_epoch_loss = total_loss / len(dataloader)
 
-    return model, true_labels, predictions_labels, avg_epoch_loss
+    return true_labels, predictions_labels, avg_epoch_loss
+
+
+def save(args, model):
+    # check if path exist
+    path = os.path.join(args.out_dir, args.gpt2, args.dataset)
+    is_exit = os.path.exists(path)
+    if is_exit:
+        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}.pt'.format(args.dataset, args.seed)))
+    else:
+        os.makedirs(path)
+        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}.pt'.format(args.dataset, args.seed)))
 
 
 def main():
@@ -109,7 +122,7 @@ def main():
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--warmup_steps", type=int, default=0)
     parser.add_argument("--num_training_steps", type=int, default=30000)
 
@@ -126,6 +139,9 @@ def main():
     else:
         tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
+    tokenizer.padding_side = "left"
+    tokenizer.pad_token = tokenizer.eos_token
+
     # random seed
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -140,8 +156,10 @@ def main():
     label_ids = load_label(args.dataset)
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    train_data = load_data(args.dataset, args.k, seed=args.seed)
-    train_dataset = ICLData(train_data, args.k, args.seed)
+    data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+    print(data_path)
+    train_dataset = ICLData(data_path)
+    print('Created `train_dataset` with %d examples!' % len(train_dataset))
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collator)
 
     optimizer = AdamW(model.parameters(), lr=args.lr, eps=1e-8)
@@ -151,14 +169,14 @@ def main():
     all_acc = {'train_acc': [], 'val_acc': []}
 
     for epoch in tqdm(range(args.num_training_steps)):
-        train_labels, train_predict, train_loss = train(args, model, train_dataloader, optimizer, scheduler, device)
+        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
         train_acc = accuracy_score(train_labels, train_predict)
         print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
         all_loss['train_loss'].append(train_loss)
         all_acc['train_acc'].append(train_acc)
 
-    torch.save(trained_model.state_dict(), os.path.join(args.out_dir, 'model_{}_{}.pt'.format(args.dataset, args.seed)))
+    save(args, model)
 
 
 if __name__ == "__main__":
