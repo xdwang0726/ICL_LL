@@ -108,18 +108,20 @@ def save(args, model):
     path = os.path.join(args.out_dir, args.gpt2, args.dataset)
     is_exit = os.path.exists(path)
     if is_exit:
-        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}.pt'.format(args.dataset, args.seed)))
+        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}_correct_{}.pt'.format(args.dataset, args.correct, args.seed)))
     else:
         os.makedirs(path)
-        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}.pt'.format(args.dataset, args.seed)))
+        torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}_correct_{}.pt'.format(args.dataset, args.correct, args.seed)))
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='cuda', type=str)
-    parser.add_argument("--seed", type=int, default=100)
+    parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
+    parser.add_argument("--correct", type=int, default=0)
+    parser.add_argument("--gold", type=bool, default=True)
     parser.add_argument("--max_len", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--lr", type=float, default=5e-5)
@@ -142,41 +144,49 @@ def main():
     tokenizer.padding_side = "left"
     tokenizer.pad_token = tokenizer.eos_token
 
-    # random seed
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.device_count() > 0:
-        torch.cuda.manual_seed_all(args.seed)
+    seeds = args.seeds.split(",")
 
-    model_config = GPT2Config.from_pretrained('gpt2', output_hidden_states=False)
-    model = GPT2ForSequenceClassification.from_pretrained("gpt2", config=model_config)
-    model.to(device)
+    for seed in seeds:
+        seed = seed.strip()
+        # random seed
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.device_count() > 0:
+            torch.cuda.manual_seed_all(seed)
 
-    label_ids = load_label(args.dataset)
-    collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
+        model_config = GPT2Config.from_pretrained('gpt2', output_hidden_states=False)
+        model = GPT2ForSequenceClassification.from_pretrained("gpt2", config=model_config)
+        model.to(device)
 
-    data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-    print(data_path)
-    train_dataset = ICLData(data_path)
-    print('Created `train_dataset` with %d examples!' % len(train_dataset))
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collator)
+        label_ids = load_label(args.dataset)
+        collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    optimizer = AdamW(model.parameters(), lr=args.lr, eps=1e-8)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=args.num_training_steps)
+        if args.gold:
+            data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+        else:
+            data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
+                                     "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
+        print(data_path)
+        train_dataset = ICLData(data_path)
+        print('Created `train_dataset` with %d examples!' % len(train_dataset))
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collator)
 
-    all_loss = {'train_loss': [], 'val_loss': []}
-    all_acc = {'train_acc': [], 'val_acc': []}
+        optimizer = AdamW(model.parameters(), lr=args.lr, eps=1e-8)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=args.num_training_steps)
 
-    for epoch in tqdm(range(args.num_training_steps)):
-        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
-        train_acc = accuracy_score(train_labels, train_predict)
-        print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
+        all_loss = {'train_loss': [], 'val_loss': []}
+        all_acc = {'train_acc': [], 'val_acc': []}
 
-        all_loss['train_loss'].append(train_loss)
-        all_acc['train_acc'].append(train_acc)
+        for epoch in tqdm(range(args.num_training_steps)):
+            train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
+            train_acc = accuracy_score(train_labels, train_predict)
+            print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
-    save(args, model)
+            all_loss['train_loss'].append(train_loss)
+            all_acc['train_acc'].append(train_acc)
+
+        save(args, model)
 
 
 if __name__ == "__main__":
