@@ -120,13 +120,12 @@ def main():
     parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
-    parser.add_argument("--correct", type=int, default=0)
-    parser.add_argument("--gold", type=bool, default=True)
+    parser.add_argument("--correct", type=int, default=100)
     parser.add_argument("--max_len", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--lr", type=float, default=5e-5)
+    parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--warmup_steps", type=int, default=0)
-    parser.add_argument("--num_training_steps", type=int, default=30000)
+    parser.add_argument("--num_training_steps", type=int, default=200)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--out_dir", type=str, default="checkpoints")
@@ -155,14 +154,15 @@ def main():
         if torch.cuda.device_count() > 0:
             torch.cuda.manual_seed_all(seed)
 
-        model_config = GPT2Config.from_pretrained('gpt2', output_hidden_states=False)
-        model = GPT2ForSequenceClassification.from_pretrained("gpt2", config=model_config)
+        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False)
+        model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
+        model.config.pad_token_id = model.config.eos_token_id
         model.to(device)
 
         label_ids = load_label(args.dataset)
         collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-        if args.gold:
+        if args.correct == 100:
             data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
         else:
             data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),

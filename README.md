@@ -7,13 +7,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-# using pre-commit hooks
-To check your code at commit time
+# Run
+## Fine-tuning 
 ```
-pre-commit install
+CUDA_VISIBLE_DEVICES=0 python fine-tuning.py --dataset {dataset} --gpt2 gpt2-large --num_training_steps 200 --lr 3e-5 --batch_size 2
 ```
 
-You can also get pre-commit to fix your code
+## Test 
 ```
-pre-commit run
+CUDA_VISIBLE_DEVICES=0  python test.py --dataset {dataset} --gpt2 gpt2-large --method direct --out_dir out/gpt2-large --checkpoint checkpoints/gpt2-large/{dataset}/model_{dataset}_{seed}.pt
 ```
