@@ -224,7 +224,8 @@ def main():
 
         print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1))
         result = {"dataset": args.datset, "result": f1}
-        save_result_path = os.path.join(args.result_dir, "{}_{}_correct".format(args.dataset, args.correct),
+        save_result_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+                                        "{}_{}_correct".format(args.dataset, args.correct),
                                         "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
