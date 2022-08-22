@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import json
 import os
 import random
@@ -6,7 +7,6 @@ import random
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, f1_score
-from sklearn.model_selection import GridSearchCV
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -128,20 +128,59 @@ def save(args, model, seed):
         torch.save(model.state_dict(), os.path.join(path, 'model_{}_{}_correct_{}.pt'.format(args.dataset, args.correct, seed)))
 
 
+def grid_para(para_list):
+
+    all_combinations = list(itertools.product(*para_list))
+
+    all_paras = []
+    paras_names = ['steps', 'lr', 'bs']
+    for item in range(len(all_combinations)):
+        paras = dict(zip(paras_names, item))
+        all_paras.append(paras)
+
+    return all_paras
+
+
+def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator):
+
+    model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False)
+    model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
+    model.config.pad_token_id = model.config.eos_token_id
+    model.to(device)
+
+    train_dataset = ICLData(train_path)
+    train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
+
+    test_dataset = ICLData(test_path)
+    test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
+
+    optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
+                                                num_training_steps=para_dict["steps"])
+
+    for epoch in tqdm(range(para_dict["steps"])):
+        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
+        train_acc = accuracy_score(train_labels, train_predict)
+        print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
+
+    test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
+    f1 = f1_score(test_true_labels, predictions_labels, average='macro')
+
+    return f1, model
+
+
 def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='cuda', type=str)
-    parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
+    parser.add_argument("--seed", type=int, default=100)
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
-    parser.add_argument("--correct", type=int, default=100)
     parser.add_argument("--max_len", type=int, default=256)
     parser.add_argument("--warmup_steps", type=int, default=0)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
-    parser.add_argument("--para_dir", type=str, default="hyperparameter")
-    parser.add_argument("--out_dir", type=str, default="checkpoints")
-    parser.add_argument("--result_dir", type=str, default="supervised_learning_results")
+    parser.add_argument("--out_dir", type=str, default="hyperparameter")
 
     args = parser.parse_args()
 
@@ -156,78 +195,36 @@ def main():
     tokenizer.padding_side = "left"
     tokenizer.pad_token = tokenizer.eos_token
 
-    seeds = args.seeds.split(",")
+    # random seed
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.device_count() > 0:
+        torch.cuda.manual_seed_all(args.seed)
 
-    # get tuned hyperparameter
-    para_path = os.path.join(args.para_dir, "{}".format(args.dataset))
-    with open(para_path, "r") as f:
-        para = json.load(f)
+    label_ids = load_label(args.dataset)
+    collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    for seed in seeds:
-        seed = seed.strip()
-        # random seed
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        if torch.cuda.device_count() > 0:
-            torch.cuda.manual_seed_all(seed)
+    train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+    test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
 
-        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False)
-        model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
-        model.config.pad_token_id = model.config.eos_token_id
-        model.to(device)
+    para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
+    all_paras = grid_para(para_list)
 
-        label_ids = load_label(args.dataset)
-        collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
+    all_f1s = []
+    for para in all_paras:
 
-        if args.correct == 100:
-            train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
-        else:
-            train_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
-                                           "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
-        print(train_data_path)
-        train_dataset = ICLData(train_data_path)
-        print('Created `train_dataset` with %d examples!' % len(train_dataset))
-        train_dataloader = DataLoader(train_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
+        f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator)
 
-        optimizer = AdamW(model.parameters(), lr=para["lr"], eps=1e-8)
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=para["steps"])
+        all_f1s.append(f1)
 
-        all_loss = {'train_loss': [], 'test_loss': []}
-        all_acc = {'train_acc': [], 'test_f1': []}
+    best_f1_index = np.argmax(all_f1s)
+    print("Dataset {}: finish hyperparameter tuning".format(args.dataset))
 
-        for epoch in tqdm(range(para["steps"])):
-            train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
-            train_acc = accuracy_score(train_labels, train_predict)
-            print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
-
-            all_loss['train_loss'].append(train_loss)
-            all_acc['train_acc'].append(train_acc)
-
-        save(args, model, seed)
-
-        print("Starting testing!")
-        if args.correct == 100:
-            test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
-        else:
-            test_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
-                                           "{}_{}_correct_{}_{}_test.jsonl".format(args.dataset, args.correct, args.k, seed))
-
-        test_dataset = ICLData(test_data_path)
-        test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
-
-        test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
-        f1 = f1_score(test_true_labels, predictions_labels, average='macro')
-
-        all_loss['test_loss'].append(avg_epoch_loss)
-        all_acc['train_acc'].append(f1)
-
-        print("Macro-F1 of %s: %.1f " % (args.dataset, f1))
-        result = {"dataset": args.datset, "result": f1}
-        save_result_path = os.path.join(args.result_dir, "{}_{}_correct".format(args.dataset, args.correct),
-                                        "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
-        with open(save_result_path, "w") as f:
-            json.dump(result, f)
+    # save hyper-parameter
+    save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
+    with open(save_path, "w") as f:
+        json.dump(all_paras[best_f1_index], f)
 
 
 if __name__ == "__main__":
