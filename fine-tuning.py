@@ -164,7 +164,7 @@ def main():
         para = json.load(f)
 
     for seed in seeds:
-        seed = seed.strip()
+        seed = int(seed.strip())
         # random seed
         random.seed(seed)
         np.random.seed(seed)
@@ -222,7 +222,7 @@ def main():
         all_loss['test_loss'].append(avg_epoch_loss)
         all_acc['train_acc'].append(f1)
 
-        print("Macro-F1 of %s: %.1f " % (args.dataset, f1))
+        print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1))
         result = {"dataset": args.datset, "result": f1}
         save_result_path = os.path.join(args.result_dir, "{}_{}_correct".format(args.dataset, args.correct),
                                         "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
