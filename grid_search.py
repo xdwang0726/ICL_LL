@@ -134,7 +134,7 @@ def grid_para(para_list):
 
     all_paras = []
     paras_names = ['steps', 'lr', 'bs']
-    for item in range(len(all_combinations)):
+    for i, item in enumerate(all_combinations):
         paras = dict(zip(paras_names, item))
         all_paras.append(paras)
 
@@ -219,7 +219,7 @@ def main():
         all_f1s.append(f1)
 
     best_f1_index = np.argmax(all_f1s)
-    print("Dataset {}: finish hyperparameter tuning".format(args.dataset))
+    print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
     save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
