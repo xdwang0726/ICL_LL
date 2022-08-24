@@ -228,7 +228,11 @@ def main():
         result = {"dataset": args.dataset, "result": f1}
         save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
                                  "{}_{}_correct".format(args.dataset, args.correct))
-        os.makedirs(save_path)
+        is_exit = os.path.exists(save_path)
+        if is_exit:
+            continue
+        else:
+            os.makedirs(save_path)
         save_result_path = os.path.join(save_path, "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
