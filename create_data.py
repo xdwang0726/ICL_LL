@@ -69,9 +69,9 @@ def main(args):
             with open(os.path.join(config_file, "{}.json".format(new_dataset)), "w") as f:
                 json.dump(config, f)
 
-            new_dataset_dir = os.path.join(args.data_dir, new_dataset)
-            if not os.path.exists(new_dataset_dir):
-                os.mkdir(new_dataset_dir)
+        new_dataset_dir = os.path.join(args.data_dir, new_dataset)
+        if not os.path.exists(new_dataset_dir):
+            os.mkdir(new_dataset_dir)
 
         # load full training data to get the distribution of the labels
         if args.variant == "random_true_distribution":
