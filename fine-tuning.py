@@ -172,12 +172,14 @@ def main():
         if torch.cuda.device_count() > 0:
             torch.cuda.manual_seed_all(seed)
 
-        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False)
+        label_ids = load_label(args.dataset)
+        num_label = len(label_ids)
+
+        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
         model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
         model.config.pad_token_id = model.config.eos_token_id
         model.to(device)
 
-        label_ids = load_label(args.dataset)
         collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
         if args.correct == 100:

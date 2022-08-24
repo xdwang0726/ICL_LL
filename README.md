@@ -6,7 +6,12 @@ aieng template repo, the static code checker runs on python3.8
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
-
+# Preparation
+## prepare the dataset
+```
+cd preprocess
+python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|16|32}
+```
 # Run
 ## Step 1: Grid search
 search hyper-parameter for each dataset 

@@ -5,7 +5,7 @@ ALL_TASKS = ['agnews.py',
              'financial_phrasebank.py',
              'glue_mrpc.py',
              'glue_rte.py',
-             'glue_sst2.py'
+             'glue_sst2.py',
              'glue_wnli.py',
              'hate_speech18.py',
              'medical_questions_pairs.py',

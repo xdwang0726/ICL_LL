@@ -141,9 +141,9 @@ def grid_para(para_list):
     return all_paras
 
 
-def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator):
+def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
-    model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False)
+    model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
     model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
@@ -203,6 +203,7 @@ def main():
         torch.cuda.manual_seed_all(args.seed)
 
     label_ids = load_label(args.dataset)
+    num_label = len(label_ids)
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
     train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
@@ -214,7 +215,7 @@ def main():
     all_f1s = []
     for para in all_paras:
 
-        f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator)
+        f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator, num_label)
 
         all_f1s.append(f1)
 
