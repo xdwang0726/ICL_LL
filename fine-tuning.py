@@ -159,7 +159,7 @@ def main():
     seeds = args.seeds.split(",")
 
     # get tuned hyperparameter
-    para_path = os.path.join(args.para_dir, "{}".format(args.dataset))
+    para_path = os.path.join(args.para_dir, "{}.json".format(args.dataset))
     with open(para_path, "r") as f:
         para = json.load(f)
 
@@ -222,11 +222,12 @@ def main():
         all_loss['test_loss'].append(avg_epoch_loss)
         all_acc['train_acc'].append(f1)
 
-        print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1))
-        result = {"dataset": args.datset, "result": f1}
-        save_result_path = os.path.join(args.result_dir, "{}".format(args.dataset),
-                                        "{}_{}_correct".format(args.dataset, args.correct),
-                                        "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
+        print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1*100))
+        result = {"dataset": args.dataset, "result": f1}
+        save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+                                 "{}_{}_correct".format(args.dataset, args.correct))
+        os.makedirs(save_path)
+        save_result_path = os.path.join(save_path, "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
 
