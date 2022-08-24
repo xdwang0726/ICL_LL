@@ -230,7 +230,7 @@ def main():
                                  "{}_{}_correct".format(args.dataset, args.correct))
         is_exit = os.path.exists(save_path)
         if is_exit:
-            continue
+            pass
         else:
             os.makedirs(save_path)
         save_result_path = os.path.join(save_path, "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
