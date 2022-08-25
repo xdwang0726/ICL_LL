@@ -1,10 +1,12 @@
-# aieng-template
-aieng template repo, the static code checker runs on python3.8
 
 # Installing dependencies
 ```
-pip install --upgrade pip
-pip install -r requirements.txt
+conda create --name ICL-LL python=3.8
+conda activate ICL-LL
+pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install git+https://github.com/huggingface/transformers
+pip install datasets
+pip install sklearn
 ```
 # Preparation
 ## prepare the dataset
@@ -12,14 +14,26 @@ pip install -r requirements.txt
 cd preprocess
 python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|16|32}
 ```
-# Run
-## Step 1: Grid search
-search hyper-parameter for each dataset 
+
+# Noisy Label
+
+## In-context Learning
+Create data with different label corruption rate
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 gpt2-large 
+python create_data.py --variant {75|50|25|0}_correct --dataset {dataset}
+```
+To run the evaluation 
+```
+python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 
 ```
 
-## Step 2: Fine-tuning and Do Supervised Learning
+## Supervised Learning
+Grid search: search hyper-parameter for each dataset 
 ```
-CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 gpt2-large --correct {} 
+CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j}
+```
+
+Fine-tuning and do supervised learning
+```
+CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --correct {100|75|50|25|0} 
 ```
