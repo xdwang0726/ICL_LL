@@ -48,3 +48,9 @@ Create data with different imbalance ratio
 ```
 python 
 ```
+
+## Supervised Learning 
+Grid search:
+```
+CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --label_imbalance True --imbalance_level low --out_dir hyperparameter/label_imbalance/
+```
