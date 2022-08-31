@@ -200,16 +200,15 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
 
             if imbalance_level == 'low':
                 # all class are even split
-                if labels == 2:
+                if len(labels) == 2:
                     split_list = [8, 8]  # if binary follow split 8:8
-                elif labels == 3:
+                elif len(labels) == 3:
                     split_list = [5, 5, 6]  # if 3-class classification follow split 4:6:8
-                elif labels == 4:
+                elif len(labels) == 4:
                     split_list = [4, 4, 4, 4]  # if 4-class classification follow split 3:3:4:6
-                elif labels == 6:
+                elif len(labels) == 6:
                     split_list = [2, 2, 3, 3, 3, 3]  # if 6-class classification follow split 2:2:2:3:3:4
 
-                print('labels',labels)
                 k_shot_train = []
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][:split_list[i]]:
@@ -224,15 +223,15 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
 
             elif imbalance_level == 'medium':
 
-                if labels == 2:
+                if len(labels) == 2:
                     split_list = [5, 11]  # if binary follow split 6:12
-                elif labels == 3:
+                elif len(labels) == 3:
                     split_list = [3, 6, 7]  # if 3-class classification follow split 4:6:8
-                elif labels == 4:
+                elif len(labels) == 4:
                     split_list = [3, 3, 4, 6]  # if 4-class classification follow split 3:3:4:6
-                elif labels == 6:
+                elif len(labels) == 6:
                     split_list = [2, 2, 2, 2, 2, 6]  # if 6-class classification follow split 2:2:2:3:3:4
-                elif labels == 14:
+                elif len(labels) == 14:
                     split_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
 
                 k_shot_train = []
@@ -249,15 +248,15 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
 
             elif imbalance_level == 'high':
 
-                if labels == 2:
+                if len(labels) == 2:
                     split_list = [1, 15]  # if binary follow split 6:12
-                elif labels == 3:
+                elif len(labels) == 3:
                     split_list = [1, 6, 9]  # if 3-class classification follow split 4:6:8
-                elif labels == 4:
+                elif len(labels) == 4:
                     split_list = [1, 2, 4, 9]  # if 4-class classification follow split 3:3:4:6
-                elif labels == 6:
+                elif len(labels) == 6:
                     split_list = [1, 1, 1, 1, 2, 10]  # if 6-class classification follow split 2:2:2:3:3:4
-                elif labels == 14:
+                elif len(labels) == 14:
                     split_list = [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5]
 
                 k_shot_train = []
