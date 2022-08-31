@@ -209,6 +209,18 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif labels == 6:
                     split_list = [2, 2, 3, 3, 3, 3]  # if 6-class classification follow split 2:2:2:3:3:4
 
+                k_shot_train = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][:split_list[i]]:
+                        k_shot_train.append(line)
+
+                k_shot_dev = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][split_list[i]:2 * split_list[i]]:
+                        k_shot_dev.append(line)
+
+                k_shot_test = test_lines
+
             elif imbalance_level == 'medium':
 
                 if labels == 2:
@@ -222,30 +234,44 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif labels == 14:
                     split_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
 
+                k_shot_train = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][:split_list[i]]:
+                        k_shot_train.append(line)
+
+                k_shot_dev = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][split_list[i]:2 * split_list[i]]:
+                        k_shot_dev.append(line)
+
+                k_shot_test = test_lines
+
             elif imbalance_level == 'high':
 
                 if labels == 2:
-                    split_list = [3, 15]  # if binary follow split 6:12
+                    split_list = [1, 15]  # if binary follow split 6:12
                 elif labels == 3:
-                    split_list = [2, 6, 10]  # if 3-class classification follow split 4:6:8
+                    split_list = [1, 6, 9]  # if 3-class classification follow split 4:6:8
                 elif labels == 4:
-                    split_list = [2, 2, 2, 10]  # if 4-class classification follow split 3:3:4:6
+                    split_list = [1, 2, 4, 9]  # if 4-class classification follow split 3:3:4:6
                 elif labels == 6:
-                    split_list = [1, 3, 3, 3, 3, 5]  # if 6-class classification follow split 2:2:2:3:3:4
+                    split_list = [1, 1, 1, 1, 2, 10]  # if 6-class classification follow split 2:2:2:3:3:4
                 elif labels == 14:
                     split_list = [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5]
 
-            k_shot_train = []
-            for i, key in enumerate(sorted_keys):
-                for line in label_list[key][:split_list[i]]:
-                    k_shot_train.append(line)
+                k_shot_train = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][:split_list[i]]:
+                        k_shot_train.append(line)
 
-            k_shot_dev = []
-            for i, key in enumerate(sorted_keys):
-                for line in label_list[key][split_list[i]:2 * split_list[i]]:
-                    k_shot_dev.append(line)
+                k_shot_dev = []
+                for i, key in enumerate(sorted_keys):
+                    for line in label_list[key][split_list[i]:2 * split_list[i]]:
+                        k_shot_dev.append(line)
 
-            k_shot_test = test_lines
+                k_shot_test = test_lines
+
+
 
         else:
             label_list = {}
