@@ -209,6 +209,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif labels == 6:
                     split_list = [2, 2, 3, 3, 3, 3]  # if 6-class classification follow split 2:2:2:3:3:4
 
+                print('labels',labels)
                 k_shot_train = []
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][:split_list[i]]:
