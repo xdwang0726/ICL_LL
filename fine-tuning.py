@@ -206,7 +206,7 @@ def main():
             all_loss['train_loss'].append(train_loss)
             all_acc['train_acc'].append(train_acc)
 
-        save(args, model, seed)
+        # cd save(args, model, seed)
 
         print("Starting testing!")
         if args.correct == 100:
