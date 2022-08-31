@@ -140,7 +140,7 @@ class FewshotGymDataset():
 
 class FewshotGymClassificationDataset(FewshotGymDataset):
 
-    def generate_k_shot_data(self, k, seed, path=None, random=False, even_split=True, test_balance=False):
+    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=False, imbalance_ratio='low'):
         """
         generate a k-shot (k) dataset using random seed (seed)
         return train, dev, test
@@ -167,6 +167,91 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
         # shuffle the data
         np.random.seed(seed)
         np.random.shuffle(train_lines)
+
+        # label imbalance
+        if label_imbalance:
+
+            label_list = {}
+            for line in train_lines:
+                label = line[1]
+                if label not in label_list:
+                    label_list[label] = [line]
+                else:
+                    label_list[label].append(line)
+            labels = list(label_list.keys())
+            print('There are %s labels in the training set' % len(labels))
+
+            sorted_keys = sorted(label_list, key=lambda k: len(label_list[k]))
+
+            if imbalance_ratio == 'low':
+                # all class are even split
+                if labels == 2:
+                    split_list = [8, 8]  # if binary follow split 8:8
+                elif labels == 3:
+                    split_list = [5, 5, 6]  # if 3-class classification follow split 4:6:8
+                elif labels == 4:
+                    split_list = [4, 4, 4, 4]  # if 4-class classification follow split 3:3:4:6
+                elif labels == 6:
+                    split_list = [2, 2, 3, 3, 3, 3]  # if 6-class classification follow split 2:2:2:3:3:4
+
+            elif imbalance_ratio == 'medium':
+
+                if labels == 2:
+                    split_list = [5, 11]  # if binary follow split 6:12
+                elif labels == 3:
+                    split_list = [3, 6, 7]  # if 3-class classification follow split 4:6:8
+                elif labels == 4:
+                    split_list = [3, 3, 4, 6]  # if 4-class classification follow split 3:3:4:6
+                elif labels == 6:
+                    split_list = [2, 2, 2, 2, 2, 6]  # if 6-class classification follow split 2:2:2:3:3:4
+                elif labels == 14:
+                    split_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
+
+            elif imbalance_ratio == 'high':
+
+                if labels == 2:
+                    split_list = [3, 15]  # if binary follow split 6:12
+                elif labels == 3:
+                    split_list = [2, 6, 10]  # if 3-class classification follow split 4:6:8
+                elif labels == 4:
+                    split_list = [2, 2, 2, 10]  # if 4-class classification follow split 3:3:4:6
+                elif labels == 6:
+                    split_list = [1, 3, 3, 3, 3, 5]  # if 6-class classification follow split 2:2:2:3:3:4
+                elif labels == 14:
+                    split_list = [1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5]
+
+            k_shot_train = []
+            for i, key in enumerate(sorted_keys):
+                for line in label_list[key][:split_list[i]]:
+                    k_shot_train.append(line)
+
+            k_shot_dev = []
+            for i, key in enumerate(sorted_keys):
+                for line in label_list[key][split_list[i]:2 * split_list[i]]:
+                    k_shot_dev.append(line)
+
+            k_shot_test = test_lines
+
+        else:
+            label_list = {}
+            for line in train_lines:
+                label = "all"
+                if label not in label_list:
+                    label_list[label] = [line]
+                else:
+                    label_list[label].append(line)
+
+            k_shot_train = []
+            for label in label_list:
+                for line in label_list[label][:k]:
+                    k_shot_train.append(line)
+
+            k_shot_dev = []
+            for label in label_list:
+                for line in label_list[label][k:2*k]:
+                    k_shot_dev.append(line)
+
+            k_shot_test = test_lines
 
         # Get label list for balanced sampling
         # if random:
@@ -347,33 +432,35 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
         #         k_shot_dev.append(line)
         # np.random.shuffle(k_shot_dev)
 
-        # choose random label distribution for demonstration examples
-        label_list = {}
-        for line in tqdm(train_lines):
-        # for line in tqdm(test_lines):
-            label = line[1]
-            if label not in label_list:
-                label_list[label] = [line]
-            else:
-                label_list[label].append(line)
 
-        random_num = randomList(len(label_list.keys()), k)
-        num_examples = {key: random_num[i] for i, key in enumerate(label_list.keys())}
-        print(num_examples)
+            # # choose random label distribution for demonstration examples
+            # label_list = {}
+            # for line in tqdm(train_lines):
+            #     # for line in tqdm(test_lines):
+            #     label = line[1]
+            #     if label not in label_list:
+            #         label_list[label] = [line]
+            #     else:
+            #         label_list[label].append(line)
+            #
+            # random_num = randomList(len(label_list.keys()), k)
+            # num_examples = {key: random_num[i] for i, key in enumerate(label_list.keys())}
+            # print(num_examples)
+            #
+            # k_shot_train = []
+            # for label in num_examples.keys():
+            #     for line in label_list[label][:num_examples[label]]:
+            #         k_shot_train.append(line)
+            # np.random.shuffle(k_shot_train)
+            #
+            # k_shot_dev = []
+            # for label in num_examples.keys():
+            #     for line in label_list[label][num_examples[label]: 2 * num_examples[label]]:
+            #         k_shot_dev.append(line)
+            # np.random.shuffle(k_shot_dev)
+            #
+            # k_shot_test = test_lines
 
-        k_shot_train = []
-        for label in num_examples.keys():
-            for line in label_list[label][:num_examples[label]]:
-                k_shot_train.append(line)
-        np.random.shuffle(k_shot_train)
-
-        k_shot_dev = []
-        for label in num_examples.keys():
-            for line in label_list[label][num_examples[label]: 2*num_examples[label]]:
-                k_shot_dev.append(line)
-        np.random.shuffle(k_shot_dev)
-
-        k_shot_test = test_lines
 
     # save to path
         self.save(path, k, seed, k_shot_train, k_shot_dev, k_shot_test)

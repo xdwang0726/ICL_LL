@@ -9,6 +9,7 @@ pip install datasets
 pip install sklearn
 ```
 # Preparation
+datasets are: `` ag_news``, ``dbpedia_14``, `` glue-sst2``, ``rotten_tomatoes``, ``trec``
 ## prepare the dataset
 ```
 cd preprocess
@@ -17,12 +18,16 @@ python _build_gym.py --build --n_proc=40 --do_test --test_k {4|8|16|32}
 
 # Noisy Label
 
-## In-context Learning
 Create data with different label corruption rate
 ```
 python create_data.py --variant {75|50|25|0}_correct --dataset {dataset}
 ```
-To run the evaluation 
+## In-context Learning
+To run the evaluation of all gold labels
+```
+python test.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87
+```
+To run the evaluation of label corruption 25-100%
 ```
 python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 
 ```
@@ -36,4 +41,10 @@ CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-la
 Fine-tuning and do supervised learning
 ```
 CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --correct {100|75|50|25|0} 
+```
+
+# Label distribution 
+Create data with different imbalance ratio
+```
+python 
 ```
