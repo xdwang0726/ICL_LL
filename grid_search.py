@@ -182,6 +182,10 @@ def main():
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--out_dir", type=str, default="hyperparameter")
 
+    parser.add_argument('--imbalance_level', type=str, default='low',
+                        help="imbalance level of labels, choosing from low, medium, high")
+    parser.add_argument('--label_imbalance', type=bool, default=False)
+
     args = parser.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
@@ -206,8 +210,12 @@ def main():
     num_label = len(label_ids)
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-    test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+    if args.label_imbalance:
+        train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+        test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+    else:
+        train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+        test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
 
     para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
     all_paras = grid_para(para_list)
