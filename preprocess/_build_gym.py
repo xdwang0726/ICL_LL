@@ -38,6 +38,8 @@ def parse_args():
     parser.add_argument('--train_k', type=int, default=16384, help="k for meta-training tasks")
     parser.add_argument('--test_k', type=int, default=16, help="k for target tasks")
 
+    parser.add_argument('--imbalance_level', type=str, default='low', help="imbalance level of labels, choosing from low, medium, high")
+
     args = parser.parse_args()
 
     if args.do_train and args.do_test:
@@ -87,6 +89,7 @@ def build_gym(args):
     all_tasks = ['agnews.py',
                  'climate_fever.py',
                  'ethos.py',
+                 'dbpedia_14.py'
                  'financial_phrasebank.py',
                  'glue_mrpc.py',
                  'glue_rte.py',

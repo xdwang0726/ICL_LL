@@ -75,7 +75,7 @@ class FewshotGymDataset():
         test_lines = map_hf_dataset_to_list(dataset, "validation")
         return train_lines, test_lines
 
-    def save(self, path, k, seed, k_shot_train, k_shot_dev, k_shot_test):
+    def save(self, path, k, seed, k_shot_train, k_shot_dev, k_shot_test, imbalance_level):
         # save to path
 
         def _apply_prompt(example):
@@ -96,8 +96,8 @@ class FewshotGymDataset():
             for key, lines in grouped_k_shot_train.items():
                 hf_identifier = key
                 if path:
-                    os.makedirs(os.path.join(path, hf_identifier), exist_ok=True)
-                    prefix = os.path.join(path, hf_identifier,
+                    os.makedirs(os.path.join(path, hf_identifier, imbalance_level), exist_ok=True)
+                    prefix = os.path.join(path, hf_identifier, imbalance_level,
                                           "{}_{}_{}".format(hf_identifier, k, seed))
                     self.write(lines, prefix + "_train.jsonl")
 
@@ -108,8 +108,8 @@ class FewshotGymDataset():
 
             hf_identifier = "inst:"+self.hf_identifier if use_instruct else self.hf_identifier
             if path:
-                os.makedirs(os.path.join(path, hf_identifier), exist_ok=True)
-                prefix = os.path.join(path, hf_identifier,
+                os.makedirs(os.path.join(path, hf_identifier, imbalance_level), exist_ok=True)
+                prefix = os.path.join(path, hf_identifier, imbalance_level,
                                     "{}_{}_{}".format(hf_identifier, k, seed))
                 self.write(k_shot_train, prefix + "_train.jsonl")
                 self.write(k_shot_dev, prefix + "_dev.jsonl")
@@ -123,8 +123,8 @@ class FewshotGymDataset():
                 k_shot_test = [preprocess(self.hf_identifier, example, config) for example in k_shot_test]
 
             if path:
-                os.makedirs(os.path.join(path, self.hf_identifier), exist_ok=True)
-                prefix = os.path.join(path, self.hf_identifier,
+                os.makedirs(os.path.join(path, self.hf_identifier, imbalance_level), exist_ok=True)
+                prefix = os.path.join(path, self.hf_identifier, imbalance_level,
                                       "{}_{}_{}".format(self.hf_identifier, k, seed))
                 self.write(k_shot_train, prefix + "_train.jsonl")
                 if do_test:
@@ -140,7 +140,7 @@ class FewshotGymDataset():
 
 class FewshotGymClassificationDataset(FewshotGymDataset):
 
-    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=False, imbalance_ratio='low'):
+    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=False, imbalance_level='low'):
         """
         generate a k-shot (k) dataset using random seed (seed)
         return train, dev, test
@@ -183,7 +183,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
 
             sorted_keys = sorted(label_list, key=lambda k: len(label_list[k]))
 
-            if imbalance_ratio == 'low':
+            if imbalance_level == 'low':
                 # all class are even split
                 if labels == 2:
                     split_list = [8, 8]  # if binary follow split 8:8
@@ -194,7 +194,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif labels == 6:
                     split_list = [2, 2, 3, 3, 3, 3]  # if 6-class classification follow split 2:2:2:3:3:4
 
-            elif imbalance_ratio == 'medium':
+            elif imbalance_level == 'medium':
 
                 if labels == 2:
                     split_list = [5, 11]  # if binary follow split 6:12
@@ -207,7 +207,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif labels == 14:
                     split_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
 
-            elif imbalance_ratio == 'high':
+            elif imbalance_level == 'high':
 
                 if labels == 2:
                     split_list = [3, 15]  # if binary follow split 6:12
@@ -463,7 +463,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
 
 
     # save to path
-        self.save(path, k, seed, k_shot_train, k_shot_dev, k_shot_test)
+        self.save(path, k, seed, k_shot_train, k_shot_dev, k_shot_test, imbalance_level)
         return k_shot_train, k_shot_dev, k_shot_test
         # return labels
 
