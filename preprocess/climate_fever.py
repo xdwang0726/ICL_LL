@@ -58,7 +58,7 @@ def main():
     dataset = ClimateFever()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
 
     # label_list = dataset.generate_k_shot_data(k=16, seed=100, path="../data/")
     # data = {"task": dataset.hf_identifier, "label_distribution": label_list}
