@@ -86,7 +86,6 @@ def build_gym(args):
 
     all_tasks = ['agnews.py',
                  'climate_fever.py',
-                 'dbpedia_14.py',
                  'ethos.py',
                  'financial_phrasebank.py',
                  'glue_mrpc.py',

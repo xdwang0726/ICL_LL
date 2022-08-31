@@ -39,7 +39,7 @@ def main():
     dataset = Sick()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_distribution/")
 
 
 if __name__ == "__main__":
