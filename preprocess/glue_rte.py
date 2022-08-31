@@ -38,7 +38,7 @@ def main():
     dataset = Glue_RTE()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
 
 
 if __name__ == "__main__":
