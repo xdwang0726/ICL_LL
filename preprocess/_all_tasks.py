@@ -10,7 +10,7 @@ ALL_TASKS = ['agnews.py',
              'hate_speech18.py',
              'medical_questions_pairs.py',
              'poem_sentiment.py',
-             'rotten_tomatoes.py'
+             'rotten_tomatoes.py',
              'sick.py',
              'superglue_cb.py',
              'trec.py',
