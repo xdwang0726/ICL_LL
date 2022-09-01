@@ -186,8 +186,9 @@ def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
         if args.is_null:
             split_name += "-null"
         cache_path = os.path.join(args.out_dir,
-                                  "{}-{}-{}{}{}{}{}.pkl".format(
+                                  "{}-{}-{}-{}{}{}{}{}.pkl".format(
                                       task,
+                                      args.imbalance_level,
                                       split_name,
                                       metaicl_data.method,
                                       "-k={}".format(args.k) if args.use_demonstrations else "",
