@@ -210,12 +210,14 @@ def main():
     num_label = len(label_ids)
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    if args.label_imbalance:
+    if not args.label_imbalance:
+        train_data_path = os.path.join("data_noisy_label", args.dataset,
+                                       "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+        test_data_path = os.path.join("data_noisy_label", args.dataset,
+                                      "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+    else:
         train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
         test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
-    else:
-        train_data_path = os.path.join("data_noisy_label", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-        test_data_path = os.path.join("data_noisy_label", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
 
     para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
     all_paras = grid_para(para_list)
