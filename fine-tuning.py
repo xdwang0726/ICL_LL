@@ -143,7 +143,7 @@ def main():
     parser.add_argument("--out_dir", type=str, default="checkpoints")
     parser.add_argument("--result_dir", type=str, default="supervised_learning_results")
 
-    parser.add_argument('--level', type=str, default='low',
+    parser.add_argument('--imbalance_level', type=str, default='low',
                         help="imbalance level of labels, choosing from low, medium, high")
     parser.add_argument('--label_imbalance', type=bool, default=False)
 
