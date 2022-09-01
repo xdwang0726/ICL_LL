@@ -237,7 +237,7 @@ def main():
         all_loss['test_loss'].append(avg_epoch_loss)
         all_acc['train_acc'].append(f1)
 
-        print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1*100))
+        print("Macro-F1 of %s at seed %d with %s imbalance level: %.1f " % (args.dataset, seed, args.imbalance_level, f1*100))
         result = {"dataset": args.dataset, "result": f1}
         if not args.label_imbalance:
             save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
