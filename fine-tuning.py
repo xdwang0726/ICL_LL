@@ -143,6 +143,10 @@ def main():
     parser.add_argument("--out_dir", type=str, default="checkpoints")
     parser.add_argument("--result_dir", type=str, default="supervised_learning_results")
 
+    parser.add_argument('--imbalance_level', type=str, default='low',
+                        help="imbalance level of labels, choosing from low, medium, high")
+    parser.add_argument('--label_imbalance', type=bool, default=False)
+
     args = parser.parse_args()
 
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
@@ -182,11 +186,16 @@ def main():
 
         collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-        if args.correct == 100:
-            train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+        if not args.label_imbalance:
+            if args.correct == 100:
+                train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+            else:
+                train_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
+                                               "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
-            train_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
-                                           "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
+            train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
+                                           "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+
         print(train_data_path)
         train_dataset = ICLData(train_data_path)
         print('Created `train_dataset` with %d examples!' % len(train_dataset))
@@ -206,14 +215,18 @@ def main():
             all_loss['train_loss'].append(train_loss)
             all_acc['train_acc'].append(train_acc)
 
-        # cd save(args, model, seed)
+        # save(args, model, seed)
 
         print("Starting testing!")
-        if args.correct == 100:
-            test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
+        if not args.label_imbalance:
+            if args.correct == 100:
+                test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
+            else:
+                test_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
+                                              "{}_{}_correct_{}_{}_test.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
-            test_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
-                                           "{}_{}_correct_{}_{}_test.jsonl".format(args.dataset, args.correct, args.k, seed))
+            test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
+                                          "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
 
         test_dataset = ICLData(test_data_path)
         test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
@@ -226,14 +239,19 @@ def main():
 
         print("Macro-F1 of %s at seed %d: %.1f " % (args.dataset, seed, f1*100))
         result = {"dataset": args.dataset, "result": f1}
-        save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
-                                 "{}_{}_correct".format(args.dataset, args.correct))
+        if not args.label_imbalance:
+            save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+                                     "{}_{}_correct".format(args.dataset, args.correct))
+        else:
+            save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+                                     "{}_{}".format(args.dataset, args.imbalance_level))
+
         is_exit = os.path.exists(save_path)
         if is_exit:
             pass
         else:
             os.makedirs(save_path)
-        save_result_path = os.path.join(save_path, "{}_{}_correct_{}_{}.json".format(args.dataset, args.correct, args.k, seed))
+        save_result_path = os.path.join(save_path, "{}_{}_{}_{}.json".format(args.dataset, args.k, seed, args.imbalance_level))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
 
