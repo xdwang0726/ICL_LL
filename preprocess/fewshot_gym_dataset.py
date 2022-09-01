@@ -213,11 +213,13 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][:split_list[i]]:
                         k_shot_train.append(line)
+                np.random.shuffle(k_shot_train)
 
                 k_shot_dev = []
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][split_list[i]:2 * split_list[i]]:
                         k_shot_dev.append(line)
+                np.random.shuffle(k_shot_dev)
 
                 k_shot_test = test_lines
 
@@ -228,7 +230,7 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 elif len(labels) == 3:
                     split_list = [3, 6, 7]  # if 3-class classification follow split 4:6:8
                 elif len(labels) == 4:
-                    split_list = [3, 3, 4, 6]  # if 4-class classification follow split 3:3:4:6
+                    split_list = [3, 4, 3, 6]  # if 4-class classification follow split 3:3:4:6
                 elif len(labels) == 6:
                     split_list = [2, 2, 2, 2, 2, 6]  # if 6-class classification follow split 2:2:2:3:3:4
                 elif len(labels) == 14:
@@ -238,11 +240,13 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][:split_list[i]]:
                         k_shot_train.append(line)
+                np.random.shuffle(k_shot_train)
 
                 k_shot_dev = []
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][split_list[i]:2 * split_list[i]]:
                         k_shot_dev.append(line)
+                np.random.shuffle(k_shot_dev)
 
                 k_shot_test = test_lines
 
@@ -263,11 +267,13 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][:split_list[i]]:
                         k_shot_train.append(line)
+                np.random.shuffle(k_shot_train)
 
                 k_shot_dev = []
                 for i, key in enumerate(sorted_keys):
                     for line in label_list[key][split_list[i]:2 * split_list[i]]:
                         k_shot_dev.append(line)
+                np.random.shuffle(k_shot_dev)
 
                 k_shot_test = test_lines
 
