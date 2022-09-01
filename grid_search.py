@@ -184,7 +184,7 @@ def main():
 
     parser.add_argument('--imbalance_level', type=str, default='low',
                         help="imbalance level of labels, choosing from low, medium, high")
-    parser.add_argument('--label_imbalance', type=bool, default=False)
+    parser.add_argument('--label_imbalance', action='store_true')
 
     args = parser.parse_args()
 
