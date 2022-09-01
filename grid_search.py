@@ -210,6 +210,7 @@ def main():
     num_label = len(label_ids)
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
+    print("FLAG1", args.label_imbalance)
     if not args.label_imbalance:
         print("FLAG")
         train_data_path = os.path.join("data_noisy_label", args.dataset,
