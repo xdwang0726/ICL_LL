@@ -211,6 +211,7 @@ def main():
     collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
     if not args.label_imbalance:
+        print("FLAG")
         train_data_path = os.path.join("data_noisy_label", args.dataset,
                                        "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
         test_data_path = os.path.join("data_noisy_label", args.dataset,
