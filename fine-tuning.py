@@ -198,7 +198,7 @@ def main():
                                                "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
             train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
-                                           "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
+                                           "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
 
         print(train_data_path)
         train_dataset = ICLData(train_data_path)
@@ -230,7 +230,7 @@ def main():
                                               "{}_{}_correct_{}_{}_test.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
             test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
-                                          "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+                                          "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
 
         test_dataset = ICLData(test_data_path)
         test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
