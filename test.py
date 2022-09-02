@@ -84,9 +84,11 @@ def main(logger, args):
 
         ### data ...
         train_data = load_data(args.task, "train", args.k, seed=seed, config_split=config_split,
-                               datasets=None if args.dataset is None else args.dataset.split(","))
+                               datasets=None if args.dataset is None else args.dataset.split(","),
+                               label_imbalance=args.label_imbalance, imbalance_level=args.imbalance_level)
         dev_data = load_data(args.task, args.split, args.k, seed=seed, config_split=config_split,
-                             datasets=None if args.dataset is None else args.dataset.split(","), is_null=args.is_null)
+                             datasets=None if args.dataset is None else args.dataset.split(","), is_null=args.is_null,
+                             label_imbalance = args.label_imbalance, imbalance_level=args.imbalance_level)
 
         if args.use_random_english_words:
             from english_words import english_words_set
@@ -137,7 +139,7 @@ def main(logger, args):
                     curr_dev_data[dp_idx]["options"] = new_options
 
             result = run(logger, test_task, metaicl_data, metaicl_model,
-                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines)
+                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines, args.label_imbalance)
 
             if result is None:
                 errors.append("%s/%s" % (test_task, seed))
@@ -155,21 +157,34 @@ def main(logger, args):
 
 
 def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
-        checkpoint, is_classification, add_newlines):
+        checkpoint, is_classification, add_newlines, label_imbalance):
 
     if args.do_zeroshot:
         split_name = args.split
         if args.is_null:
             split_name += "-null"
-        cache_path = os.path.join(args.out_dir,
-                                  "{}-{}-{}{}{}{}{}.pkl".format(
-                                      task,
-                                      split_name,
-                                      metaicl_data.method,
-                                      "-k={}".format(args.k) if args.use_demonstrations else "",
-                                      "-s={}".format(seed) if args.use_demonstrations or args.use_random_english_words else "",
-                                      "" if add_newlines else "-no-newlines",
-                                      "-randomEnglish" if args.use_random_english_words else ""))
+        if not label_imbalance:
+            cache_path = os.path.join(args.out_dir,
+                                      "{}-{}-{}{}{}{}{}.pkl".format(
+                                          task,
+                                          split_name,
+                                          metaicl_data.method,
+                                          "-k={}".format(args.k) if args.use_demonstrations else "",
+                                          "-s={}".format(seed) if args.use_demonstrations or args.use_random_english_words else "",
+                                          "" if add_newlines else "-no-newlines",
+                                          "-randomEnglish" if args.use_random_english_words else ""))
+        else:
+            cache_path = os.path.join(args.out_dir,
+                                      "{}-{}-{}-{}{}{}{}{}.pkl".format(
+                                          task,
+                                          args.imbalance_level,
+                                          split_name,
+                                          metaicl_data.method,
+                                          "-k={}".format(args.k) if args.use_demonstrations else "",
+                                          "-s={}".format(
+                                              seed) if args.use_demonstrations or args.use_random_english_words else "",
+                                          "" if add_newlines else "-no-newlines",
+                                          "-randomEnglish" if args.use_random_english_words else ""))
     else:
         assert add_newlines
         cache_path = os.path.join(args.out_dir, "{}-{}-{}{}{}{}.pkl".format(
@@ -260,6 +275,10 @@ if __name__=='__main__':
     parser.add_argument("--is_null", default=False, action="store_true")
     parser.add_argument("--method", type=str, default="direct", choices=["direct", "channel"])
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
+
+    parser.add_argument('--label_imbalance', action='store_true')
+    parser.add_argument('--imbalance_level', type=str, default='low',
+                        help="imbalance level of labels, choosing from low, medium, high")
 
     args = parser.parse_args()
 

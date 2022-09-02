@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 
-def load_data(task, split, k, seed=0, config_split=None, datasets=None,
+def load_data(task, split, k, seed=0, config_split=None, datasets=None, label_imbalance=False, imbalance_level=None,
               is_null=False):
     if config_split is None:
         config_split = split
@@ -24,8 +24,14 @@ def load_data(task, split, k, seed=0, config_split=None, datasets=None,
 
     data = []
     for dataset in datasets:
-        data_path = os.path.join("data", dataset,
-                                 "{}_{}_{}_{}.jsonl".format(dataset, k, seed, split))
+
+        if not label_imbalance:
+            data_path = os.path.join("data_noisy_label", dataset,
+                                     "{}_{}_{}_{}.jsonl".format(dataset, k, seed, split))
+        else:
+            data_path = os.path.join("data_imbalance", "{}_{}".format(dataset, imbalance_level),
+                                     "{}_{}_{}_{}.jsonl".format(dataset, k, seed, split))
+        print("COMFIRM DATA PATH:", data_path)
         with open(data_path, "r") as f:
             for line in f:
                 dp = json.loads(line)
