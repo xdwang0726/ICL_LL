@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification
+from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, GPTJForSequenceClassification
 
 
 def load_label(dataset):
@@ -143,8 +143,14 @@ def grid_para(para_list):
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
-    model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
-    model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
+    if args.gpt2.startswith("gpt2"):
+        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
+        model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
+        model.config.pad_token_id = model.config.eos_token_id
+    elif args.gpt2.startswith("gpt-j"):
+        model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
+        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", config=model_config)
+
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
 
