@@ -135,7 +135,7 @@ def main():
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--correct", type=int, default=100)
-    parser.add_argument("--max_len", type=int, default=256)
+    parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
