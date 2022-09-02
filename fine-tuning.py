@@ -164,9 +164,9 @@ def main():
 
     # get tuned hyperparameter
     if not args.label_imbalance:
-        para_path = os.path.join(args.para_dir, "noisy_label", "{}.json".format(args.dataset))
+        para_path = os.path.join(args.para_dir, "noisy_label", args.gpt2, "{}.json".format(args.dataset))
     else:
-        para_path = os.path.join(args.para_dir, "label_imbalance", "{}.json".format(args.dataset))
+        para_path = os.path.join(args.para_dir, "label_imbalance", args.gpt2, "{}.json".format(args.dataset))
 
     with open(para_path, "r") as f:
         para = json.load(f)
