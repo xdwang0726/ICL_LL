@@ -192,15 +192,15 @@ def main():
 
         if not args.label_imbalance:
             if args.correct == 100:
-                train_data_path = os.path.join("data", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+                train_data_path = os.path.join("data_noisy_label", args.dataset, "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
             else:
-                train_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
+                train_data_path = os.path.join("data_noisy_label", "{}_{}_correct".format(args.dataset, args.correct),
                                                "{}_{}_correct_{}_{}_train.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
             train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
                                            "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
 
-        print(train_data_path)
+        print("TRAINING DATA PATH: ", train_data_path)
         train_dataset = ICLData(train_data_path)
         print('Created `train_dataset` with %d examples!' % len(train_dataset))
         train_dataloader = DataLoader(train_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
@@ -224,9 +224,9 @@ def main():
         print("Starting testing!")
         if not args.label_imbalance:
             if args.correct == 100:
-                test_data_path = os.path.join("data", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
+                test_data_path = os.path.join("data_noisy_label", args.dataset, "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
             else:
-                test_data_path = os.path.join("data", "{}_{}_correct".format(args.dataset, args.correct),
+                test_data_path = os.path.join("data_noisy_label", "{}_{}_correct".format(args.dataset, args.correct),
                                               "{}_{}_correct_{}_{}_test.jsonl".format(args.dataset, args.correct, args.k, seed))
         else:
             test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level),
