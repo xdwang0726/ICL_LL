@@ -116,6 +116,8 @@ class MetaICLData(object):
 
     def _prepro_each_datapoint(self, dp, is_first=True, is_training=False, for_demonstrations=False,
                                add_newlines=True):
+
+        option_trans = {"NUM": "Number", "LOC": "Location", "HUM": "Person", "DESC": "Description", "ENTY": "Entity", "ABBR": "Abbreviation"}
         dp = dp.copy()
         if add_newlines:
             no_label = np.all([option=="" for option in dp["options"]])
@@ -127,12 +129,12 @@ class MetaICLData(object):
                     else:
                         dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: " + ", ".join(dp["options"]) + "."
                 if not no_label:
-                    dp["output"] = "\n" + dp["output"]
+                    dp["output"] = "\n" + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n" + opt for opt in dp["options"]]
             elif self.method=="channel":
                 if not is_first:
-                    dp["output"] = "\n\n\n" + dp["output"]
+                    dp["output"] = "\n\n\n" + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
@@ -145,13 +147,13 @@ class MetaICLData(object):
                 if self.method=="direct":
                     dp["input"] = " " + "Input: " + dp["input"] + " Options: " + ", ".join(dp["options"]) + "."
                 elif self.method=="channel":
-                    dp["output"] = " " + dp["output"]
+                    dp["output"] = " " + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = [" "+opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = " " + dp["output"]
+                dp["output"] = " " + "Output: " + dp["output"]
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in dp["options"]]
             elif self.method=="channel":
@@ -188,7 +190,7 @@ class MetaICLData(object):
 
         else:
             assert len(dp["options"])>=2, dp
-            assert dp["output"] in dp["options"]
+            # assert dp["output"] in dp["options"]
             option_tokens = [self.tokenizer(option)["input_ids"] for option in dp["options"]]
             option_length = np.max([len(option) for option in option_tokens])
 
