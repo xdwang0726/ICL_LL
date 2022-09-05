@@ -123,9 +123,9 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"]) + "."
+                        dp["input"] = "\n\n" + "Input: " + dp["input"] + " Options: " + ",".join(dp["options"]) + "."
                     else:
-                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"]) + "."
+                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: " + ",".join(dp["options"]) + "."
                 if not no_label:
                     dp["output"] = "\n" + dp["output"]
                     if "options" in dp:
@@ -137,13 +137,13 @@ class MetaICLData(object):
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
                     if not no_label:
-                        dp["input"] = "\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"]) + "."
+                        dp["input"] = "\n" + "Input: " + dp["input"] + " Options: " + ",".join(dp["options"]) + "."
             else:
                 raise NotImplementedError()
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"]) + "."
+                    dp["input"] = " " + "Input: " + dp["input"] + " Options: " + ",".join(dp["options"]) + "."
                 elif self.method=="channel":
                     dp["output"] = " " + dp["output"]
                     if "options" in dp:
@@ -155,7 +155,7 @@ class MetaICLData(object):
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in dp["options"]]
             elif self.method=="channel":
-                dp["input"] = " " + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"]) + "."
+                dp["input"] = " " + "Input: " + dp["input"] + " Options: " + ",".join(dp["options"]) + "."
             else:
                 raise NotImplementedError()
 
