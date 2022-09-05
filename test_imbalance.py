@@ -94,7 +94,7 @@ def main(logger, args):
     logger.info("batch_size=%d\tmax_length=%d\tmax_length_per_example=%d" % (
         args.test_batch_size, max_length, max_length_per_example))
 
-    metaicl_data = MetaICLData(logger, tokenizer, args.method,args.use_demonstrations, args.k,
+    metaicl_data = MetaICLData(logger, tokenizer, args.method, args.use_demonstrations, args.k,
                                max_length, max_length_per_example)
 
     results = []

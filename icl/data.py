@@ -123,9 +123,9 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n\n" + dp["input"]
+                        dp["input"] = "\n\n" + dp["input"] + " " + dp["options"]
                     else:
-                        dp["input"] = "\n\n\n" + dp["input"]
+                        dp["input"] = "\n\n\n" + dp["input"] + " " + dp["options"]
                 if not no_label:
                     dp["output"] = "\n" + dp["output"]
                     if "options" in dp:
@@ -143,7 +143,7 @@ class MetaICLData(object):
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + dp["input"]
+                    dp["input"] = " " + dp["input"] + " " + dp["options"]
                 elif self.method=="channel":
                     dp["output"] = " " + dp["output"]
                     if "options" in dp:
