@@ -123,39 +123,39 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n\n" + dp["input"]
+                        dp["input"] = "\n\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"])
                     else:
-                        dp["input"] = "\n\n\n" + dp["input"]
+                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"])
                 if not no_label:
-                    dp["output"] = "\n" + dp["output"]
+                    dp["output"] = "\n" + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n" + opt for opt in dp["options"]]
             elif self.method=="channel":
                 if not is_first:
-                    dp["output"] = "\n\n\n" + dp["output"]
+                    dp["output"] = "\n\n\n"  + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
                     if not no_label:
-                        dp["input"] = "\n" + dp["input"]
+                        dp["input"] = "\n" + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"])
             else:
                 raise NotImplementedError()
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + dp["input"]
+                    dp["input"] = " " + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"])
                 elif self.method=="channel":
-                    dp["output"] = " " + dp["output"]
+                    dp["output"] = " " + "Output: " + dp["output"]
                     if "options" in dp:
                         dp["options"] = [" "+opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = " " + dp["output"]
+                dp["output"] = " " + "Output: " + dp["output"]
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in dp["options"]]
             elif self.method=="channel":
-                dp["input"] = " " + dp["input"]
+                dp["input"] = " " + "Input: " + dp["input"] + "Option: " + ",".join(dp["options"])
             else:
                 raise NotImplementedError()
 
