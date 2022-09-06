@@ -129,15 +129,15 @@ class MetaICLData(object):
                     else:
                         dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
                 if not no_label:
-                    dp["output"] = "\n" + option_trans[dp["output"]]
+                    dp["output"] = "\n" + "Output: " + option_trans[dp["output"]]
                     if "options" in dp:
                         # dp["options"] = ["\n" + opt for opt in dp["options"]]
-                        dp["options"] = ["\n" + opt for opt in list(option_trans.values())]
+                        dp["options"] = ["\n" + "Output: " + opt for opt in list(option_trans.values())]
             elif self.method=="channel":
                 if not is_first:
-                    dp["output"] = "\n\n\n" + option_trans[dp["output"]]
+                    dp["output"] = "\n\n\n" + "Output: " + option_trans[dp["output"]]
                     if "options" in dp:
-                        dp["options"] = ["\n\n\n" + opt for opt in list(option_trans.values())]
+                        dp["options"] = ["\n\n\n" + "Output: " + opt for opt in list(option_trans.values())]
                 if not no_input:
                     if not no_label:
                         dp["input"] = "\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
@@ -148,15 +148,15 @@ class MetaICLData(object):
                 if self.method=="direct":
                     dp["input"] = " " + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
                 elif self.method=="channel":
-                    dp["output"] = " " + option_trans[dp["output"]]
+                    dp["output"] = " " + "Output: " + option_trans[dp["output"]]
                     if "options" in dp:
-                        dp["options"] = [" "+opt for opt in list(option_trans.values())]
+                        dp["options"] = [" " + "Output: " + opt for opt in list(option_trans.values())]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = " " + option_trans[dp["output"]]
+                dp["output"] = " " + "Output: " + option_trans[dp["output"]]
                 if "options" in dp:
-                    dp["options"] = [" " + opt for opt in list(option_trans.values())]
+                    dp["options"] = [" " + "Output: " + opt for opt in list(option_trans.values())]
             elif self.method=="channel":
                 dp["input"] = " " + "Input: " + option_trans[dp["output"]] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
             else:
@@ -201,7 +201,6 @@ class MetaICLData(object):
             input_tokens = [input_tokens for _ in option_tokens]
             output_tokens = option_tokens
             option_tokens = [dp["options"].index(dp["output"])]
-            print('input token', input_tokens, 'output_token', output_tokens, 'option_token', option_tokens)
 
             if self.method=="direct":
                 return input_tokens, output_tokens, option_tokens
