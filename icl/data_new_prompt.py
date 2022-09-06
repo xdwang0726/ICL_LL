@@ -405,11 +405,11 @@ class MetaICLData(object):
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
                 dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
-
-            inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, inputs, outputs, answer,
+            input_format = "Input: " + inputs + " " + "Output: "
+            inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, input_format, outputs, answer,
                                                                                     is_training=False,for_demonstrations=False)
 
-            # input_format = "Input: " + inputs + " " + "Output: "
+            #
             # input_tokens = self.tokenizer(input_format)["input_ids"]
             # print("input_tokens", input_tokens)
             # output_tokens = self.tokenizer(outputs)["input_ids"]
@@ -419,11 +419,8 @@ class MetaICLData(object):
 
             metadata.append({"indices": indices, "answer": answer, "options": dp["options"]})
 
-            print("inputs", inputs)
             for inputs_, outputs_ in zip(inputs, outputs):
                 if self.use_demonstrations:
-                    #print("demonstration", demonstrations)
-
                     inputs_ = demonstrations + inputs_
 
                 encoded = prepro_sentence_pair_single(
