@@ -156,7 +156,7 @@ class MetaICLData(object):
             if self.method=="direct":
                 dp["output"] = option_trans[dp["output"]]
                 if "options" in dp:
-                    dp["options"] = [" " + opt for opt in list(option_trans.values())]
+                    dp["options"] = [opt for opt in list(option_trans.values())]
             elif self.method=="channel":
                 dp["input"] = " " + option_trans[dp["input"]]
             else:
