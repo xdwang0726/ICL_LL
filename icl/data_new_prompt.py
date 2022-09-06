@@ -154,7 +154,7 @@ class MetaICLData(object):
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = " " + option_trans[dp["output"]]
+                dp["output"] = option_trans[dp["output"]]
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in list(option_trans.values())]
             elif self.method=="channel":
@@ -408,7 +408,6 @@ class MetaICLData(object):
             input_format = "Input: " + inputs + " " + "Output: "
             inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, input_format, outputs, answer,
                                                                                     is_training=False,for_demonstrations=False)
-            print('output', outputs)
 
             # input_tokens = self.tokenizer(input_format)["input_ids"]
             # print("input_tokens", input_tokens)
