@@ -422,7 +422,7 @@ class MetaICLData(object):
             print("inputs", inputs)
             for inputs_, outputs_ in zip(inputs, outputs):
                 if self.use_demonstrations:
-                    print("demonstration", demonstrations)
+                    #print("demonstration", demonstrations)
 
                     inputs_ = demonstrations + inputs_
 
