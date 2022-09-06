@@ -125,9 +125,9 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n\n" + "Input: " + dp["input"] + " Options: " + ", ".join(list(option_trans.values())) + "."
+                        dp["input"] = "\n\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
                     else:
-                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: " + ", ".join(list(option_trans.values())) + "."
+                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
                 if not no_label:
                     dp["output"] = "\n" + option_trans[dp["output"]]
                     if "options" in dp:
@@ -140,13 +140,13 @@ class MetaICLData(object):
                         dp["options"] = ["\n\n\n" + opt for opt in list(option_trans.values())]
                 if not no_input:
                     if not no_label:
-                        dp["input"] = "\n" + "Input: " + dp["input"] + " Options: " + ", ".join(list(option_trans.values())) + "."
+                        dp["input"] = "\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
             else:
                 raise NotImplementedError()
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + "Input: " + dp["input"] + " Options: " + ", ".join(list(option_trans.values())) + "."
+                    dp["input"] = " " + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
                 elif self.method=="channel":
                     dp["output"] = " " + option_trans[dp["output"]]
                     if "options" in dp:
@@ -158,7 +158,7 @@ class MetaICLData(object):
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in list(option_trans.values())]
             elif self.method=="channel":
-                dp["input"] = " " + "Input: " + option_trans[dp["output"]] + " Options: " + ", ".join(list(option_trans.values())) + "."
+                dp["input"] = " " + "Input: " + option_trans[dp["output"]] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
             else:
                 raise NotImplementedError()
 
@@ -201,6 +201,7 @@ class MetaICLData(object):
             input_tokens = [input_tokens for _ in option_tokens]
             output_tokens = option_tokens
             option_tokens = [dp["options"].index(dp["output"])]
+            print('input token', input_tokens, 'output_token', output_tokens, 'option_token', option_tokens)
 
             if self.method=="direct":
                 return input_tokens, output_tokens, option_tokens
