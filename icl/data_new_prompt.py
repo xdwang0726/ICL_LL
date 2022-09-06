@@ -392,12 +392,12 @@ class MetaICLData(object):
                 input_, output_, options_ = self._prepro_each_datapoint(
                     dp, is_first=i==0, for_demonstrations=True,
                     add_newlines=add_newlines)
-                input_format = "Input: " + input_
-                output_format = "Output: " + output_
+                input_format = "Input: " + input_ + " "
+                output_format = "Output: " + output_ + " "
                 input_tokens = self.tokenizer(input_format)["input_ids"]
                 output_tokens = self.tokenizer(output_format)["input_ids"]
                 demonstrations += input_tokens + output_tokens
-            explanation = "Classify the input texts based on whether they are about {}".format(','.join(options_))
+            explanation = "Classify the input texts based on whether they are about {}. ".format(','.join(options_))
             explanation_tokens = self.tokenizer(explanation)["input_ids"]
             demonstrations = explanation_tokens + demonstrations
             print('demonstration example:', self.tokenizer.decode(demonstrations))
@@ -406,9 +406,14 @@ class MetaICLData(object):
             inputs, outputs, answer = self._prepro_each_datapoint(
                 dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
 
+            input_format = "Input: " + inputs + " " + "Output: "
+            input_tokens = self.tokenizer(input_format)["input_ids"]
+            output_tokens = self.tokenizer(outputs)["input_ids"]
+            answer_tokens = self.tokenizer(answer)["input_ids"]
+
             indices = [[i] for i in range(len(input_ids), len(input_ids)+len(inputs))]
 
-            metadata.append({"indices": indices, "answer": answer, "options": dp["options"]})
+            metadata.append({"indices": indices, "answer": answer_tokens, "options": dp["options"]})
 
             for inputs_, outputs_ in zip(inputs, outputs):
                 if self.use_demonstrations:
