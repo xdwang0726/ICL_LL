@@ -408,8 +408,8 @@ class MetaICLData(object):
             input_format = "Input: " + inputs + " " + "Output: "
             inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, input_format, outputs, answer,
                                                                                     is_training=False,for_demonstrations=False)
+            print('output', outputs)
 
-            #
             # input_tokens = self.tokenizer(input_format)["input_ids"]
             # print("input_tokens", input_tokens)
             # output_tokens = self.tokenizer(outputs)["input_ids"]
