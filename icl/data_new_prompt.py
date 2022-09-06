@@ -121,7 +121,7 @@ class MetaICLData(object):
         dp = dp.copy()
         if add_newlines:
             no_label = np.all([option=="" for option in list(option_trans.values())])
-            no_input ="Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"==""
+            no_input =dp["input"]==""
             if self.method=="direct":
                 if not is_first:
                     if no_input:
@@ -211,6 +211,11 @@ class MetaICLData(object):
                 return output_tokens, input_tokens, option_tokens
             else:
                 raise NotImplementedError()
+
+
+    def _constrcut_prompt(self):
+        return None
+
 
     def _tensorize_for_training(self, train_data):
         for dp in train_data:
