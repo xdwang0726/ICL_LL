@@ -408,6 +408,7 @@ class MetaICLData(object):
 
             input_format = "Input: " + inputs + " " + "Output: "
             input_tokens = self.tokenizer(input_format)["input_ids"]
+            print("input_tokens", input_tokens)
             output_tokens = self.tokenizer(outputs)["input_ids"]
             answer_tokens = self.tokenizer(answer)["input_ids"]
 
@@ -417,7 +418,6 @@ class MetaICLData(object):
 
             for inputs_, outputs_ in zip(input_tokens, output_tokens):
                 if self.use_demonstrations:
-                    print('demonstration', demonstrations)
                     print("inputs_", inputs_)
                     inputs_ = demonstrations + inputs_
 
