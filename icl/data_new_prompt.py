@@ -400,7 +400,7 @@ class MetaICLData(object):
             explanation = "Classify the input texts based on whether they are about {}. ".format(','.join(options_))
             explanation_tokens = self.tokenizer(explanation)["input_ids"]
             demonstrations = explanation_tokens + demonstrations
-            print('demonstration example:', self.tokenizer.decode(demonstrations))
+            # print('demonstration example:', self.tokenizer.decode(demonstrations))
 
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
@@ -417,6 +417,8 @@ class MetaICLData(object):
 
             for inputs_, outputs_ in zip(input_tokens, output_tokens):
                 if self.use_demonstrations:
+                    print('demonstration', demonstrations)
+                    print("inputs_", inputs_)
                     inputs_ = demonstrations + inputs_
 
                 encoded = prepro_sentence_pair_single(
