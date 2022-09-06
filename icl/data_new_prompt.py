@@ -163,9 +163,9 @@ class MetaICLData(object):
                 raise NotImplementedError()
 
         input_tokens = self.tokenizer(dp["input"])["input_ids"]
-        print('input', dp["input"])
-        print('output', dp["output"])
-        print('option', dp["options"])
+        # print('input', dp["input"])
+        # print('output', dp["output"])
+        # print('option', dp["options"])
 
         if is_training or for_demonstrations:
             output_tokens = self.tokenizer(dp["output"])["input_ids"]
