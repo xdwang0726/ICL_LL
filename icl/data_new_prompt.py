@@ -419,10 +419,11 @@ class MetaICLData(object):
 
             metadata.append({"indices": indices, "answer": answer, "options": dp["options"]})
 
+            print("inputs", inputs)
             for inputs_, outputs_ in zip(inputs, outputs):
                 if self.use_demonstrations:
                     print("demonstration", demonstrations)
-                    print("inputs_", inputs_)
+
                     inputs_ = demonstrations + inputs_
 
                 encoded = prepro_sentence_pair_single(
