@@ -415,7 +415,7 @@ class MetaICLData(object):
 
             metadata.append({"indices": indices, "answer": answer_tokens, "options": dp["options"]})
 
-            for inputs_, outputs_ in zip(inputs, outputs):
+            for inputs_, outputs_ in zip(input_tokens, output_tokens):
                 if self.use_demonstrations:
                     inputs_ = demonstrations + inputs_
 
