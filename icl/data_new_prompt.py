@@ -393,7 +393,7 @@ class MetaICLData(object):
                     dp, is_first=i==0, for_demonstrations=True,
                     add_newlines=add_newlines)
                 demonstrations += input_ + output_
-                print('demonstration example:', self.tokenizer(input_))
+                print('demonstration example:', self.tokenizer.decode(demonstrations))
 
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
