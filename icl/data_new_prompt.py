@@ -125,9 +125,9 @@ class MetaICLData(object):
             if self.method=="direct":
                 if not is_first:
                     if no_input:
-                        dp["input"] = "\n\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
+                        dp["input"] = "\n\n" + dp["input"]
                     else:
-                        dp["input"] = "\n\n\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
+                        dp["input"] = "\n\n\n" + dp["input"]
                 if not no_label:
                     dp["output"] = "\n" + option_trans[dp["output"]]
                     if "options" in dp:
@@ -140,13 +140,13 @@ class MetaICLData(object):
                         dp["options"] = ["\n\n\n" + opt for opt in list(option_trans.values())]
                 if not no_input:
                     if not no_label:
-                        dp["input"] = "\n" + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
+                        dp["input"] = "\n" + dp["input"]
             else:
                 raise NotImplementedError()
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + "Input: " + dp["input"] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
+                    dp["input"] = " " + dp["input"]
                 elif self.method=="channel":
                     dp["output"] = " " + option_trans[dp["output"]]
                     if "options" in dp:
@@ -158,17 +158,19 @@ class MetaICLData(object):
                 if "options" in dp:
                     dp["options"] = [" " + opt for opt in list(option_trans.values())]
             elif self.method=="channel":
-                dp["input"] = " " + "Input: " + option_trans[dp["output"]] + " Options: [" + ", ".join(list(option_trans.values())) + "]"
+                dp["input"] = " " + option_trans[dp["input"]]
             else:
                 raise NotImplementedError()
 
-        input_tokens = self.tokenizer(dp["input"])["input_ids"]
-        # print('input', dp["input"])
-        # print('output', dp["output"])
-        # print('option', dp["options"])
+        return dp["input"], dp["output"], dp["options"]
+
+
+    def _prepro_tensorized_output_each_datapoint(self, dp, input, output, options, is_training=False, for_demonstrations=False,):
+        dp = dp.copy()
+        input_tokens = self.tokenizer(input)["input_ids"]
 
         if is_training or for_demonstrations:
-            output_tokens = self.tokenizer(dp["output"])["input_ids"]
+            output_tokens = self.tokenizer(output)["input_ids"]
 
             if "task" in dp:
                 if (dp["task"].startswith("inst:piqa") or dp["task"].startswith("inst:yahoo_answers_topics")) and \
@@ -194,8 +196,8 @@ class MetaICLData(object):
 
         else:
             assert len(dp["options"])>=2, dp
-            assert dp["output"] in dp["options"]
-            option_tokens = [self.tokenizer(option)["input_ids"] for option in dp["options"]]
+            assert output in options
+            option_tokens = [self.tokenizer(option)["input_ids"] for option in options]
             option_length = np.max([len(option) for option in option_tokens])
 
             if len(input_tokens)>=self.max_length_per_example - 2 - option_length:
@@ -203,7 +205,7 @@ class MetaICLData(object):
 
             input_tokens = [input_tokens for _ in option_tokens]
             output_tokens = option_tokens
-            option_tokens = [dp["options"].index(dp["output"])]
+            option_tokens = [options.index(output)]
 
             if self.method=="direct":
                 return input_tokens, output_tokens, option_tokens
@@ -211,9 +213,6 @@ class MetaICLData(object):
                 return output_tokens, input_tokens, option_tokens
             else:
                 raise NotImplementedError()
-
-
-    def _constrcut_prompt(self):
         return None
 
 
@@ -388,12 +387,20 @@ class MetaICLData(object):
         if self.use_demonstrations:
             assert len(train_data)==self.k
             demonstrations = []
+
             for i, dp in enumerate(train_data):
-                input_, output_ = self._prepro_each_datapoint(
+                input_, output_, options_ = self._prepro_each_datapoint(
                     dp, is_first=i==0, for_demonstrations=True,
                     add_newlines=add_newlines)
-                demonstrations += input_ + output_
-                print('demonstration example:', self.tokenizer.decode(demonstrations))
+                input_format = "Input: " + input_
+                output_format = "Output: " + output_
+                input_tokens = self.tokenizer(input_format)["input_ids"]
+                output_tokens = self.tokenizer(output_format)["input_ids"]
+                demonstrations += input_tokens + output_tokens
+            explanation = "Classify the input texts based on whether they are about {}".format(','.join(options_))
+            explanation_tokens = self.tokenizer(explanation)["input_ids"]
+            demonstrations = explanation_tokens + demonstrations
+            print('demonstration example:', self.tokenizer.decode(demonstrations))
 
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
