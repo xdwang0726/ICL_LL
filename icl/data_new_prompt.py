@@ -165,7 +165,7 @@ class MetaICLData(object):
         return dp["input"], dp["output"], dp["options"]
 
 
-    def _prepro_tensorized_output_each_datapoint(self, dp, input, output, options, is_training=False, for_demonstrations=False,):
+    def _prepro_tensorized_output_each_datapoint(self, dp, input, output, options, is_training=False, for_demonstrations=False):
         dp = dp.copy()
         input_tokens = self.tokenizer(input)["input_ids"]
 
@@ -406,18 +406,22 @@ class MetaICLData(object):
             inputs, outputs, answer = self._prepro_each_datapoint(
                 dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
 
-            input_format = "Input: " + inputs + " " + "Output: "
-            input_tokens = self.tokenizer(input_format)["input_ids"]
-            print("input_tokens", input_tokens)
-            output_tokens = self.tokenizer(outputs)["input_ids"]
-            answer_tokens = self.tokenizer(answer)["input_ids"]
+            inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(self, dp, inputs, outputs, answer,
+                                                                                    is_training=False,for_demonstrations=False)
+
+            # input_format = "Input: " + inputs + " " + "Output: "
+            # input_tokens = self.tokenizer(input_format)["input_ids"]
+            # print("input_tokens", input_tokens)
+            # output_tokens = self.tokenizer(outputs)["input_ids"]
+            # answer_tokens = self.tokenizer(answer)["input_ids"]
 
             indices = [[i] for i in range(len(input_ids), len(input_ids)+len(inputs))]
 
-            metadata.append({"indices": indices, "answer": answer_tokens, "options": dp["options"]})
+            metadata.append({"indices": indices, "answer": answer, "options": dp["options"]})
 
-            for inputs_, outputs_ in zip(input_tokens, output_tokens):
+            for inputs_, outputs_ in zip(inputs, outputs):
                 if self.use_demonstrations:
+                    print("demonstration", demonstrations)
                     print("inputs_", inputs_)
                     inputs_ = demonstrations + inputs_
 
