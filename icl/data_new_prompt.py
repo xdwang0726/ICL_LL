@@ -406,7 +406,7 @@ class MetaICLData(object):
             inputs, outputs, answer = self._prepro_each_datapoint(
                 dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
 
-            inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(self, dp, inputs, outputs, answer,
+            inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, inputs, outputs, answer,
                                                                                     is_training=False,for_demonstrations=False)
 
             # input_format = "Input: " + inputs + " " + "Output: "
