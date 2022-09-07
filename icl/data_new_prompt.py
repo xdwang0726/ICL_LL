@@ -392,12 +392,12 @@ class MetaICLData(object):
                 input_, output_, options_ = self._prepro_each_datapoint(
                     dp, is_first=i==0, for_demonstrations=True,
                     add_newlines=add_newlines)
-                input_format = "Input: " + input_ + " "
-                output_format = "Output: " + output_ + " "
+                input_format = "Question: " + input_ + " "
+                output_format = "Answer Type: " + output_ + " "
                 input_tokens = self.tokenizer(input_format)["input_ids"]
                 output_tokens = self.tokenizer(output_format)["input_ids"]
                 demonstrations += input_tokens + output_tokens
-            explanation = "Classify the input texts based on whether they are about {}. ".format(','.join(options_))
+            explanation = "Classify the questions based on whether their answer type is a Number, Location, Person, Description, Entity, or Abbreviation."
             explanation_tokens = self.tokenizer(explanation)["input_ids"]
             demonstrations = explanation_tokens + demonstrations
             # print('demonstration example:', self.tokenizer.decode(demonstrations))
@@ -405,7 +405,7 @@ class MetaICLData(object):
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
                 dp, is_first=not self.use_demonstrations, add_newlines=add_newlines)
-            input_format = "Input: " + inputs + " " + "Output: "
+            input_format = "Question: " + inputs + " " + "Answer Type: "
             inputs, outputs, answer = self._prepro_tensorized_output_each_datapoint(dp, input_format, outputs, answer,
                                                                                     is_training=False,for_demonstrations=False)
 
