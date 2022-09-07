@@ -6,6 +6,7 @@ import random
 
 import numpy as np
 import torch
+from accelerate import Accelerator
 from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
@@ -60,29 +61,30 @@ class Gpt2ClassificationCollator(object):
         return inputs
 
 
-def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
+def train(model, dataloader, optimizer, scheduler, device, accelerator, max_grad_norm=1.0):
     model.train()
     true_labels = []
     predictions_labels = []
     total_loss = 0
 
-    scaler = torch.cuda.amp.GradScaler(enabled=True)
+    # scaler = torch.cuda.amp.GradScaler(enabled=True)
     for batch in dataloader:
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
 
-        with torch.cuda.amp.autocast(enabled=True):
-            outputs = model(**batch)
-            loss, logits = outputs[:2]
+        # with torch.cuda.amp.autocast(enabled=True):
+        outputs = model(**batch)
+        loss, logits = outputs[:2]
+        total_loss += loss.item()
 
-            total_loss += loss.item()
-
-        scaler.scale(loss).backward()
-        scaler.unscale_(optimizer)
+        accelerator.backward(loss)
+        # scaler.scale(loss).backward()
+        # scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-        scaler.step(optimizer)
-        scaler.update()
+        optimizer.step()
+        # scaler.step(optimizer)
+        # scaler.update()
         scheduler.step()
 
         optimizer.zero_grad()
@@ -165,12 +167,13 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     test_dataset = ICLData(test_path)
     test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
 
+    accelerator = Accelerator(fp16=True)
     optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
 
     for epoch in tqdm(range(para_dict["steps"])):
-        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
+        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device, accelerator)
         train_acc = accuracy_score(train_labels, train_predict)
         print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
