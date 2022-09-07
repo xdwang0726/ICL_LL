@@ -75,16 +75,14 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
         model.zero_grad()
         with torch.cuda.amp.autocast():
             outputs = model(**batch)
-
-        loss, logits = outputs[:2]
+            loss, logits = outputs[:2]
 
         total_loss += loss.item()
         scaler.scale(loss).backward()
 
-        scaler.update()
-
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-        optimizer.step()
+        scaler.step(optimizer)
+        scaler.update()
         scheduler.step()
 
         logits = logits.detach().cpu().numpy()
