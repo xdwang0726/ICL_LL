@@ -77,11 +77,11 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
             outputs = model(**batch)
             loss, logits = outputs[:2]
 
-        total_loss += loss.item()
+            total_loss += loss.item()
         scaler.scale(loss).backward()
 
-        # scaler.unscale_(optimizer)
-        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         scaler.step(optimizer)
         scaler.update()
         scheduler.step()
