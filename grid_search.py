@@ -78,7 +78,7 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
         total_loss += loss.item()
         loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm, error_if_nonfinite=falsenvidia)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm, error_if_nonfinite=False)
         optimizer.step()
         scheduler.step()
 
