@@ -66,12 +66,11 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     predictions_labels = []
     total_loss = 0
 
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.cuda.amp.GradScaler(enabled=True)
     for batch in dataloader:
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
-
 
         with torch.cuda.amp.autocast(enabled=True):
             outputs = model(**batch)
@@ -80,7 +79,7 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
             total_loss += loss.item()
 
         scaler.scale(loss).backward()
-        # scaler.unscale_(optimizer)
+        scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         scaler.step(optimizer)
         scaler.update()
