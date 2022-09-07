@@ -66,6 +66,7 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     predictions_labels = []
     total_loss = 0
 
+    scaler = torch.cuda.amp.GradScaler()
     for batch in dataloader:
 
         true_labels += batch['labels'].numpy().flatten().tolist()
@@ -78,7 +79,9 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
         loss, logits = outputs[:2]
 
         total_loss += loss.item()
-        loss.backward()
+        scaler.scale(loss).backward()
+
+        scaler.update()
 
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         optimizer.step()
