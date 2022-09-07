@@ -149,7 +149,7 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model.config.pad_token_id = model.config.eos_token_id
     elif args.gpt2.startswith("gpt-j"):
         model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True, num_labels=num_label)
-        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", config=model_config)
+        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True, config=model_config)
 
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
