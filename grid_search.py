@@ -73,7 +73,7 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
 
 
-        with torch.cuda.amp.autocast():
+        with torch.cuda.amp.autocast(enabled=True):
             outputs = model(**batch)
             loss, logits = outputs[:2]
 
