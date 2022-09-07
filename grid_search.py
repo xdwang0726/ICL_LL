@@ -170,8 +170,8 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
-    accelerator = Accelerator(fp16=True)
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, train_dataloader)
+    accelerator = Accelerator(fp16=True, mixed_precision="fp16")
+    model, optimizer, dataloader, scheduler = accelerator.prepare(model, optimizer, train_dataloader, scheduler)
 
     for epoch in tqdm(range(para_dict["steps"])):
         train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device, accelerator)
