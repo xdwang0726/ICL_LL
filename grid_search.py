@@ -3,7 +3,7 @@ import itertools
 import json
 import os
 import random
-
+import bitsandbytes as bnb
 import numpy as np
 import torch
 from accelerate import Accelerator
@@ -12,6 +12,8 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, GPTJForSequenceClassification
+from torch import nn
+from transformers.trainer_pt_utils import get_parameter_names
 
 
 def load_label(dataset):
@@ -61,7 +63,7 @@ class Gpt2ClassificationCollator(object):
         return inputs
 
 
-def train(model, dataloader, optimizer, scheduler, device, accelerator, max_grad_norm=1.0):
+def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     model.train()
     true_labels = []
     predictions_labels = []
@@ -78,13 +80,8 @@ def train(model, dataloader, optimizer, scheduler, device, accelerator, max_grad
         loss, logits = outputs[:2]
         total_loss += loss.item()
 
-        accelerator.backward(loss)
-        # scaler.scale(loss).backward()
-        # scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
         optimizer.step()
-        # scaler.step(optimizer)
-        # scaler.update()
         scheduler.step()
 
         optimizer.zero_grad()
@@ -156,7 +153,7 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model.config.pad_token_id = model.config.eos_token_id
     elif args.gpt2.startswith("gpt-j"):
         model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", torch_dtype=torch.float16, low_cpu_mem_usage=True, config=model_config)
+        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True, config=model_config)
 
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
@@ -167,14 +164,17 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     test_dataset = ICLData(test_path)
     test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
 
-    optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
+    if args.gpt2.startswith("gpt2"):
+        optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
+    elif args.gpt2.startswith("gpt-j"):
+        # add 8 bit Adam to gpt-j fine-tuning
+        optimizer = bnb.optim.Adam8bit(model.parameters(), lr=para_dict["lr"], eps=1e-8)
+
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
-    accelerator = Accelerator(fp16=True, mixed_precision="fp16")
-    model, optimizer, dataloader, scheduler = accelerator.prepare(model, optimizer, train_dataloader, scheduler)
 
     for epoch in tqdm(range(para_dict["steps"])):
-        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device, accelerator)
+        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
         train_acc = accuracy_score(train_labels, train_predict)
         print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
