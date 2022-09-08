@@ -195,7 +195,7 @@ def main():
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
-    parser.add_argument("--gradient_accumulation_steps", type=int, default=2)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--out_dir", type=str, default="hyperparameter")
