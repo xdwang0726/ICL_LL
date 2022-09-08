@@ -107,6 +107,7 @@ def test(model, dataloader, device):
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
+        batch.half()
 
         with torch.no_grad():
             outputs = model(**batch)
