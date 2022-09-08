@@ -3,17 +3,15 @@ import itertools
 import json
 import os
 import random
-import bitsandbytes as bnb
+
 import numpy as np
 import torch
-from accelerate import Accelerator
 from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, GPTJForSequenceClassification
-from torch import nn
-from transformers.trainer_pt_utils import get_parameter_names
+from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, \
+    GPTJForSequenceClassification
 
 
 def load_label(dataset):
