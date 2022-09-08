@@ -83,13 +83,13 @@ def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1
         scaler.scale(loss).backward()
         # loss.backward()
 
-        scaler.unscale_(optimizer)
         if (i+1) % args.gradient_accumulation_steps == 0:
+            scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
             # optimizer.step()
             scaler.step(optimizer)
-            scaler.update()
             scheduler.step()
+            scaler.update()
             optimizer.zero_grad()
 
         logits = logits.detach().cpu().numpy()
