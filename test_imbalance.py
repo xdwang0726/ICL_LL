@@ -22,7 +22,7 @@ from collections import Counter, defaultdict
 from torch.utils.data import TensorDataset, DataLoader, SequentialSampler
 from transformers import GPT2Tokenizer, AutoTokenizer
 
-from icl.data_new_prompt import MetaICLData
+from icl.data import MetaICLData
 from icl.model import MetaICLModel
 
 
