@@ -63,14 +63,14 @@ class Gpt2ClassificationCollator(object):
         return inputs
 
 
-def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
+def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     model.train()
     true_labels = []
     predictions_labels = []
     total_loss = 0
 
     # scaler = torch.cuda.amp.GradScaler(enabled=True)
-    for batch in dataloader:
+    for i, batch in enumerate(dataloader):
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
@@ -79,12 +79,14 @@ def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
         outputs = model(**batch)
         loss, logits = outputs[:2]
         total_loss += loss.item()
+        loss = loss / args.gradient_accumulation_steps
+        loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-        optimizer.step()
-        scheduler.step()
-
-        optimizer.zero_grad()
+        if (i+1) % args.gradient_accumulation_steps == 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
 
         logits = logits.detach().cpu().numpy()
 
@@ -164,17 +166,12 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     test_dataset = ICLData(test_path)
     test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
 
-    if args.gpt2.startswith("gpt2"):
-        optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
-    elif args.gpt2.startswith("gpt-j"):
-        # add 8 bit Adam to gpt-j fine-tuning
-        optimizer = bnb.optim.Adam8bit(model.parameters(), lr=para_dict["lr"], eps=1e-8)
-
+    optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
 
     for epoch in tqdm(range(para_dict["steps"])):
-        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
+        train_labels, train_predict, train_loss = train(args, model, train_dataloader, optimizer, scheduler, device)
         train_acc = accuracy_score(train_labels, train_predict)
         print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
@@ -193,6 +190,7 @@ def main():
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=2)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--out_dir", type=str, default="hyperparameter")
