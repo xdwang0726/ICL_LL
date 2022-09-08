@@ -69,7 +69,7 @@ def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1
     predictions_labels = []
     total_loss = 0
 
-    scaler = torch.cuda.amp.GradScaler(enabled=True)
+    # scaler = torch.cuda.amp.GradScaler(enabled=True)
     for i, batch in enumerate(dataloader):
 
         true_labels += batch['labels'].numpy().flatten().tolist()
@@ -80,16 +80,16 @@ def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1
             loss, logits = outputs[:2]
             total_loss += loss.item()
             loss = loss / args.gradient_accumulation_steps
-        scaler.scale(loss).backward()
-        # loss.backward()
+        # scaler.scale(loss).backward()
+        loss.backward()
 
         if (i+1) % args.gradient_accumulation_steps == 0:
-            scaler.unscale_(optimizer)
+            # scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-            # optimizer.step()
-            scaler.step(optimizer)
+            optimizer.step()
+            # scaler.step(optimizer)
             scheduler.step()
-            scaler.update()
+            # scaler.update()
             optimizer.zero_grad()
 
         logits = logits.detach().cpu().numpy()
