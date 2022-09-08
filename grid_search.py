@@ -69,22 +69,26 @@ def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1
     predictions_labels = []
     total_loss = 0
 
-    # scaler = torch.cuda.amp.GradScaler(enabled=True)
+    scaler = torch.cuda.amp.GradScaler(enabled=True)
     for i, batch in enumerate(dataloader):
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
 
-        # with torch.cuda.amp.autocast(enabled=True):
-        outputs = model(**batch)
-        loss, logits = outputs[:2]
-        total_loss += loss.item()
-        loss = loss / args.gradient_accumulation_steps
-        loss.backward()
+        with torch.cuda.amp.autocast(enabled=True):
+            outputs = model(**batch)
+            loss, logits = outputs[:2]
+            total_loss += loss.item()
+            loss = loss / args.gradient_accumulation_steps
+        scaler.scale(loss).backward()
+        # loss.backward()
 
+        scaler.unscale_(optimizer)
         if (i+1) % args.gradient_accumulation_steps == 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-            optimizer.step()
+            # optimizer.step()
+            scaler.step(optimizer)
+            scaler.update()
             scheduler.step()
             optimizer.zero_grad()
 
@@ -156,7 +160,7 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model.config.pad_token_id = model.config.eos_token_id
     elif args.gpt2.startswith("gpt-j"):
         model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True, config=model_config)
+        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", low_cpu_mem_usage=True, config=model_config)
 
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
