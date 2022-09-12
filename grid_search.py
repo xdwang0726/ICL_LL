@@ -253,6 +253,7 @@ def main():
     save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
     with open(save_path, "w") as f:
         json.dump(all_paras[best_f1_index], f)
+    print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-n
 ## Supervised Learning
 Grid search: search hyper-parameter for each dataset 
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --out_dir hyperparameter/noisy_label/
+CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --out_dir hyperparameter/noisy_label/{gpt2-large|gpt-neo|gpt-neox|gpt-j}
 ```
 
 Fine-tuning and do supervised learning
@@ -56,7 +56,7 @@ python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-n
 ## Supervised Learning 
 Grid search:
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --label_imbalance --imbalance_level low --out_dir hyperparameter/label_imbalance/
+CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --label_imbalance --imbalance_level low --out_dir hyperparameter/label_imbalance/{gpt2-large|gpt-neo|gpt-neox|gpt-j}
 ```
 Fine-tuning and do supervised learning
 ```
