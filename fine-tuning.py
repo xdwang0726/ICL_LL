@@ -171,6 +171,7 @@ def main():
     with open(para_path, "r") as f:
         para = json.load(f)
 
+    performance = []
     for seed in seeds:
         seed = int(seed.strip())
         # random seed
@@ -243,6 +244,7 @@ def main():
 
         test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
         f1 = f1_score(test_true_labels, predictions_labels, average='macro')
+        performance.append(f1)
 
         all_loss['test_loss'].append(avg_epoch_loss)
         all_acc['train_acc'].append(f1)
@@ -264,6 +266,9 @@ def main():
         save_result_path = os.path.join(save_path, "{}_{}_{}_{}.json".format(args.dataset, args.k, seed, args.imbalance_level))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
+
+    average = sum(performance) / len(performance)
+    print("Macro-F1 of %s : %.1f " % (args.dataset, average * 100))
 
 
 if __name__ == "__main__":
