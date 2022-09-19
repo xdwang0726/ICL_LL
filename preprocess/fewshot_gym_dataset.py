@@ -155,7 +155,7 @@ class FewshotGymDataset():
 
 class FewshotGymClassificationDataset(FewshotGymDataset):
 
-    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=None, imbalance_level='low'):
+    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=True, imbalance_level='low'):
         """
         generate a k-shot (k) dataset using random seed (seed)
         return train, dev, test
@@ -276,8 +276,6 @@ class FewshotGymClassificationDataset(FewshotGymDataset):
                 np.random.shuffle(k_shot_dev)
 
                 k_shot_test = test_lines
-
-
 
         else:
             label_list = {}
