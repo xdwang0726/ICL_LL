@@ -86,24 +86,25 @@ def build_gym(args):
     #             filename!="utils.py" and "unifiedqa" not in filename:
     #         all_tasks.append(filename)
 
-    all_tasks = ['agnews.py',
-                 'climate_fever.py',
-                 'ethos.py',
-                 'dbpedia_14.py',
-                 'financial_phrasebank.py',
-                 'glue_mrpc.py',
-                 'glue_rte.py',
-                 'glue_sst2.py',
-                 'glue_wnli.py',
-                 'hate_speech18.py',
-                 'medical_questions_pairs.py',
-                 'poem_sentiment.py',
-                 'rotten_tomatoes.py',
-                 'sick.py',
-                 'superglue_cb.py',
-                 'trec.py',
-                 'tweet_eval.py']
-
+    # all_tasks = ['agnews.py',
+    #              'climate_fever.py',
+    #              'ethos.py',
+    #              'dbpedia_14.py',
+    #              'financial_phrasebank.py',
+    #              'glue_mrpc.py',
+    #              'glue_rte.py',
+    #              'glue_sst2.py',
+    #              'glue_wnli.py',
+    #              'hate_speech18.py',
+    #              'imdb.py',
+    #              'medical_questions_pairs.py',
+    #              'poem_sentiment.py',
+    #              'rotten_tomatoes.py',
+    #              'sick.py',
+    #              'superglue_cb.py',
+    #              'trec.py',
+    #              'tweet_eval.py']
+    all_tasks = 'imdb.py'
     assert all_tasks == ALL_TASKS
     print("Passing file checks ...")
 
