@@ -155,7 +155,7 @@ class FewshotGymDataset():
 
 class FewshotGymClassificationDataset(FewshotGymDataset):
 
-    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=True, imbalance_level='high'):
+    def generate_k_shot_data(self, k, seed, path=None, label_imbalance=False, imbalance_level='high'):
         """
         generate a k-shot (k) dataset using random seed (seed)
         return train, dev, test
