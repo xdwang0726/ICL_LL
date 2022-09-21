@@ -397,7 +397,7 @@ class MetaICLData(object):
                 # input_format = "Question: " + input_ + "\n"
                 input_format = ""
                 # output_format = "Answer Type: " + output_ + "\n"
-                output_format = "answer: " + output_
+                output_format = " answer: " + output_ + ". "
                 # input_tokens = self.tokenizer(input_format)["input_ids"]
                 input_tokens = self.tokenizer(input_)["input_ids"]
                 output_tokens = self.tokenizer(output_format)["input_ids"]
