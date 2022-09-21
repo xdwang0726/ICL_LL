@@ -19,17 +19,24 @@ class Superglue_CB(FewshotGymClassificationDataset):
         self.task_type = "classification"
 
         # for classification tasks, specify the meaning of each label
+        # self.label = {
+        #     0: "entailment",
+        #     1: "contradiction",
+        #     2: "neutral",
+        # }
         self.label = {
-            0: "entailment",
-            1: "contradiction",
-            2: "neutral",
+            0: "true",
+            1: "false",
+            2: "neither",
         }
 
     def map_hf_dataset_to_list(self, hf_dataset, split_name):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
-            lines.append(("premise: " + datapoint["premise"] + " [SEP] hypothesis: " + datapoint["hypothesis"], self.label[datapoint["label"]]))
+            # lines.append(("premise: " + datapoint["premise"] + " [SEP] hypothesis: " + datapoint["hypothesis"], self.label[datapoint["label"]]))
+            lines.append((datapoint["premise"].strip() + "\n" + "question: " + datapoint["hypothesis"] + ". true, false, or neither?",
+                          self.label[datapoint["label"]]))
             #lines.append(json.dumps({
             #    "input": "premise: " + datapoint["premise"] + " hypothesis: " + datapoint["hypothesis"],
             #    "output": self.label[datapoint["label"]],
@@ -44,7 +51,7 @@ def main():
     dataset = Superglue_CB()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
 
 
 if __name__ == "__main__":
