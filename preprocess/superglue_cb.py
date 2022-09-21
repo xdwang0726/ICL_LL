@@ -35,7 +35,7 @@ class Superglue_CB(FewshotGymClassificationDataset):
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
             # lines.append(("premise: " + datapoint["premise"] + " [SEP] hypothesis: " + datapoint["hypothesis"], self.label[datapoint["label"]]))
-            lines.append((datapoint["premise"] + "question: " + datapoint["hypothesis"] + ". true, false, or neither?",
+            lines.append((datapoint["premise"] + " question: " + datapoint["hypothesis"] + ". true, false, or neither?",
                           self.label[datapoint["label"]]))
             #lines.append(json.dumps({
             #    "input": "premise: " + datapoint["premise"] + " hypothesis: " + datapoint["hypothesis"],
