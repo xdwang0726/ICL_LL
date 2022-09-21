@@ -117,10 +117,9 @@ class MetaICLData(object):
     def _prepro_each_datapoint(self, dp, is_first=True, is_training=False, for_demonstrations=False,
                                add_newlines=True):
 
-        option_trans = {"NUM": "Number", "LOC": "Location", "HUM": "Person", "DESC": "Description", "ENTY": "Entity", "ABBR": "Abbreviation"}
         dp = dp.copy()
         if add_newlines:
-            no_label = np.all([option=="" for option in list(option_trans.values())])
+            no_label = np.all([option=="" for option in dp["options"]])
             no_input =dp["input"]==""
             if self.method=="direct":
                 if not is_first:
@@ -129,15 +128,15 @@ class MetaICLData(object):
                     else:
                         dp["input"] = "\n\n\n" + dp["input"]
                 if not no_label:
-                    dp["output"] = "\n" + option_trans[dp["output"]]
+                    dp["output"] = "\n" + dp["options"]
                     if "options" in dp:
                         # dp["options"] = ["\n" + opt for opt in dp["options"]]
-                        dp["options"] = ["\n" + opt for opt in list(option_trans.values())]
+                        dp["options"] = ["\n" + opt for opt in dp["options"]]
             elif self.method=="channel":
                 if not is_first:
-                    dp["output"] = "\n\n\n" + option_trans[dp["output"]]
+                    dp["output"] = "\n\n\n" + dp["options"]
                     if "options" in dp:
-                        dp["options"] = ["\n\n\n" + opt for opt in list(option_trans.values())]
+                        dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
                     if not no_label:
                         dp["input"] = "\n" + dp["input"]
@@ -148,17 +147,17 @@ class MetaICLData(object):
                 if self.method=="direct":
                     dp["input"] = " " + dp["input"]
                 elif self.method=="channel":
-                    dp["output"] = " " + option_trans[dp["output"]]
+                    dp["output"] = " " + dp["options"]
                     if "options" in dp:
-                        dp["options"] = [" " + opt for opt in list(option_trans.values())]
+                        dp["options"] = [" " + opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = option_trans[dp["output"]]
+                dp["output"] = dp["options"]
                 if "options" in dp:
-                    dp["options"] = [opt for opt in list(option_trans.values())]
+                    dp["options"] = [opt for opt in dp["options"]]
             elif self.method=="channel":
-                dp["input"] = " " + option_trans[dp["input"]]
+                dp["input"] = " " + dp["options"]
             else:
                 raise NotImplementedError()
 
