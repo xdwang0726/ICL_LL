@@ -145,18 +145,18 @@ class MetaICLData(object):
         else:
             if not is_first:
                 if self.method=="direct":
-                    # dp["input"] = " " + dp["input"]
-                    dp["input"] = dp["input"]
+                    dp["input"] = " " + dp["input"]
+                    # dp["input"] = dp["input"]
                 elif self.method=="channel":
-                    # dp["output"] = " " + dp["output"]
-                    dp["output"] = dp["output"]
+                    dp["output"] = " " + dp["output"]
+                    # dp["output"] = dp["output"]
                     if "options" in dp:
                         dp["options"] = [" " + opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                # dp["output"] = " " + dp["output"]
-                dp["output"] = dp["output"]
+                dp["output"] = " " + dp["output"]
+                # dp["output"] = dp["output"]
                 if "options" in dp:
                     dp["options"] = [opt for opt in dp["options"]]
             elif self.method=="channel":
