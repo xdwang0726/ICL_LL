@@ -394,14 +394,16 @@ class MetaICLData(object):
                 input_, output_, options_ = self._prepro_each_datapoint(
                     dp, is_first=i==0, for_demonstrations=True,
                     add_newlines=add_newlines)
-                input_format = "Question: " + input_ + "\n"
-                output_format = "Answer Type: " + output_ + "\n"
+                # input_format = "Question: " + input_ + "\n"
+                input_format = ""
+                # output_format = "Answer Type: " + output_ + "\n"
+                output_format = "answer: " + output_
                 input_tokens = self.tokenizer(input_format)["input_ids"]
                 output_tokens = self.tokenizer(output_format)["input_ids"]
                 demonstrations += input_tokens + output_tokens
-            explanation = "Classify the questions based on whether their answer type is a Number, Location, Person, Description, Entity, or Abbreviation.\n\n"
-            explanation_tokens = self.tokenizer(explanation)["input_ids"]
-            demonstrations = explanation_tokens + demonstrations
+            # explanation = "Classify the questions based on whether their answer type is a Number, Location, Person, Description, Entity, or Abbreviation.\n\n"
+            # explanation_tokens = self.tokenizer(explanation)["input_ids"]
+            # demonstrations = explanation_tokens + demonstrations
 
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
