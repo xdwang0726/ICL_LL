@@ -128,13 +128,13 @@ class MetaICLData(object):
                     else:
                         dp["input"] = "\n\n\n" + dp["input"]
                 if not no_label:
-                    dp["output"] = "\n" + dp["options"]
+                    dp["output"] = "\n" + dp["output"]
                     if "options" in dp:
                         # dp["options"] = ["\n" + opt for opt in dp["options"]]
                         dp["options"] = ["\n" + opt for opt in dp["options"]]
             elif self.method=="channel":
                 if not is_first:
-                    dp["output"] = "\n\n\n" + dp["options"]
+                    dp["output"] = "\n\n\n" + dp["output"]
                     if "options" in dp:
                         dp["options"] = ["\n\n\n" + opt for opt in dp["options"]]
                 if not no_input:
@@ -147,17 +147,17 @@ class MetaICLData(object):
                 if self.method=="direct":
                     dp["input"] = " " + dp["input"]
                 elif self.method=="channel":
-                    dp["output"] = " " + dp["options"]
+                    dp["output"] = " " + dp["output"]
                     if "options" in dp:
                         dp["options"] = [" " + opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = dp["options"]
+                dp["output"] = " " + dp["output"]
                 if "options" in dp:
                     dp["options"] = [opt for opt in dp["options"]]
             elif self.method=="channel":
-                dp["input"] = " " + dp["options"]
+                dp["input"] = " " + dp["input"]
             else:
                 raise NotImplementedError()
 
