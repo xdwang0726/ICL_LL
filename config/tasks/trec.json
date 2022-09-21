@@ -1,1 +1,1 @@
-{"task_type": "classification", "options": ["ABBR", "DESC", "ENTY", "HUM", "LOC", "NUM"]}
+{"task_type": "classification", "options": ["Abbreviation", "Description", "Entity", "Person", "Location", "Number"]}
