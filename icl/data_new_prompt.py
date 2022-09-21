@@ -145,7 +145,8 @@ class MetaICLData(object):
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + dp["input"]
+                    # dp["input"] = " " + dp["input"]
+                    dp["input"] = dp["input"]
                 elif self.method=="channel":
                     # dp["output"] = " " + dp["output"]
                     dp["output"] = dp["output"]
@@ -197,8 +198,7 @@ class MetaICLData(object):
 
         else:
             assert len(dp["options"])>=2, dp
-            print(output, options)
-            assert output.strip() in options
+            assert output in options
             option_tokens = [self.tokenizer(option)["input_ids"] for option in options]
             option_length = np.max([len(option) for option in option_tokens])
 
