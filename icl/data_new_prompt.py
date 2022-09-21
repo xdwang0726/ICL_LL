@@ -195,6 +195,7 @@ class MetaICLData(object):
 
         else:
             assert len(dp["options"])>=2, dp
+            print(output, options)
             assert output in options
             option_tokens = [self.tokenizer(option)["input_ids"] for option in options]
             option_length = np.max([len(option) for option in option_tokens])
