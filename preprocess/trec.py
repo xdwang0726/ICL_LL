@@ -18,13 +18,21 @@ class TREC(FewshotGymClassificationDataset):
         self.task_type = "classification"
 
         # for classification tasks, specify the meaning of each label
+        # self.label = {
+        #     0: "DESC",
+        #     1: "ENTY",
+        #     2: "ABBR",
+        #     3: "HUM",
+        #     4: "NUM",
+        #     5: "LOC",
+        # }
         self.label = {
-            0: "DESC",
-            1: "ENTY",
-            2: "ABBR",
-            3: "HUM",
-            4: "NUM",
-            5: "LOC",
+            0: "Description",
+            1: "Entity",
+            2: "Abbreviation",
+            3: "Person",
+            4: "Number",
+            5: "Location",
         }
 
     def get_train_test_lines(self, dataset):
@@ -57,7 +65,7 @@ def main():
     dataset = TREC()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
 
 
 if __name__ == "__main__":

@@ -104,7 +104,7 @@ def build_gym(args):
     #              'superglue_cb.py',
     #              'trec.py',
     #              'tweet_eval.py']
-    all_tasks = ['imdb.py']
+    all_tasks = ['trec.py']
     assert all_tasks == ALL_TASKS
     print("Passing file checks ...")
 

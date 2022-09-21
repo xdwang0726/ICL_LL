@@ -17,4 +17,4 @@
 #              'trec.py',
 #              'tweet_eval.py']
 
-ALL_TASKS = ['imdb.py']
+ALL_TASKS = ['trec.py']
