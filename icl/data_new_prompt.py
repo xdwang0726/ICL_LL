@@ -145,18 +145,18 @@ class MetaICLData(object):
         else:
             if not is_first:
                 if self.method=="direct":
-                    dp["input"] = " " + dp["input"]
-                    # dp["input"] = dp["input"]
+                    # dp["input"] = " " + dp["input"]
+                    dp["input"] = dp["input"]
                 elif self.method=="channel":
-                    dp["output"] = " " + dp["output"]
-                    # dp["output"] = dp["output"]
+                    # dp["output"] = " " + dp["output"]
+                    dp["output"] = dp["output"]
                     if "options" in dp:
                         dp["options"] = [" " + opt for opt in dp["options"]]
                 else:
                     raise NotImplementedError()
             if self.method=="direct":
-                dp["output"] = " " + dp["output"]
-                # dp["output"] = dp["output"]
+                # dp["output"] = " " + dp["output"]
+                dp["output"] = dp["output"]
                 if "options" in dp:
                     dp["options"] = [opt for opt in dp["options"]]
             elif self.method=="channel":
@@ -399,10 +399,9 @@ class MetaICLData(object):
                 input_tokens = self.tokenizer(input_format)["input_ids"]
                 output_tokens = self.tokenizer(output_format)["input_ids"]
                 demonstrations += input_tokens + output_tokens
-            explanation = "Classify the questions based on whether their answer type is a Number, Location, Person, Description, Entity, or Abbreviation. \n\n"
+            explanation = "Classify the questions based on whether their answer type is a Number, Location, Person, Description, Entity, or Abbreviation.\n\n"
             explanation_tokens = self.tokenizer(explanation)["input_ids"]
             demonstrations = explanation_tokens + demonstrations
-            print('demonstration example:', self.tokenizer.decode(demonstrations))
 
         for dp_idx, dp in enumerate(test_data):
             inputs, outputs, answer = self._prepro_each_datapoint(
