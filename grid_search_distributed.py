@@ -165,17 +165,19 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
             get_device_map(len(self.transformer.h), range(torch.cuda.device_count())) if device_map is None else device_map
         )
         assert_device_map(self.device_map, len(self.transformer.h))
+        self.transformer.parallelize(self.device_map)
+        self.score  = self.score.to(self.transformer.first_device)
         self.model_parallel = True
-        self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
-        self.last_device = "cuda:" + str(max(self.device_map.keys()))
-        self.transformer.wte = self.transformer.wte.to(self.first_device)
-        # Load onto devices
-        for k, v in self.device_map.items():
-            for block in v:
-                cuda_device = "cuda:" + str(k)
-                self.transformer.h[block] = self.transformer.h[block].to(cuda_device)
-        # ln_f to last
-        self.transformer.ln_f = self.transformer.ln_f.to(self.last_device)
+        # self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
+        # self.last_device = "cuda:" + str(max(self.device_map.keys()))
+        # self.transformer.wte = self.transformer.wte.to(self.first_device)
+        # # Load onto devices
+        # for k, v in self.device_map.items():
+        #     for block in v:
+        #         cuda_device = "cuda:" + str(k)
+        #         self.transformer.h[block] = self.transformer.h[block].to(cuda_device)
+        # # ln_f to last
+        # self.transformer.ln_f = self.transformer.ln_f.to(self.last_device)
 
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
