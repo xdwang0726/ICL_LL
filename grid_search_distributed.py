@@ -3,19 +3,14 @@ import itertools
 import json
 import os
 import random
-import bitsandbytes as bnb
+
 import numpy as np
 import torch
-from accelerate import Accelerator
 from sklearn.metrics import accuracy_score, f1_score
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, GPTJForSequenceClassification
-from torch import nn
-from transformers.trainer_pt_utils import get_parameter_names
-from transformers import Trainer, TrainingArguments
-
+from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification
 
 def load_label(dataset):
     data_path = os.path.join("config/tasks", "{}.json".format(dataset))
@@ -64,28 +59,34 @@ class Gpt2ClassificationCollator(object):
         return inputs
 
 
-def train(model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
+def train(args, model, dataloader, optimizer, scheduler, device, max_grad_norm=1.0):
     model.train()
     true_labels = []
     predictions_labels = []
     total_loss = 0
 
     # scaler = torch.cuda.amp.GradScaler(enabled=True)
-    for batch in dataloader:
+    for i, batch in enumerate(dataloader):
 
         true_labels += batch['labels'].numpy().flatten().tolist()
         batch = {k: v.type(torch.long).to(device) for k, v in batch.items()}
 
-        # with torch.cuda.amp.autocast(enabled=True):
-        outputs = model(**batch)
-        loss, logits = outputs[:2]
-        total_loss += loss.item()
+        with torch.cuda.amp.autocast(enabled=True):
+            outputs = model(**batch)
+            loss, logits = outputs[:2]
+            total_loss += loss.item()
+            loss = loss / args.gradient_accumulation_steps
+        # scaler.scale(loss).backward()
+        loss.backward()
 
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-        optimizer.step()
-        scheduler.step()
-
-        optimizer.zero_grad()
+        if (i+1) % args.gradient_accumulation_steps == 0:
+            # scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+            optimizer.step()
+            # scaler.step(optimizer)
+            scheduler.step()
+            # scaler.update()
+            optimizer.zero_grad()
 
         logits = logits.detach().cpu().numpy()
 
@@ -148,43 +149,30 @@ def grid_para(para_list):
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
-    if args.gpt2.startswith("gpt2"):
-        model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
-        model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
-        model.config.pad_token_id = model.config.eos_token_id
-    elif args.gpt2.startswith("gpt-j"):
-        model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True, config=model_config)
-
+    model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
+    model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+    model.model_parallel = True
+    model.device_map = {
+        0: [0, 1, 2, 3, 4, 5, 6],
+        1: [7, 8, 9, 10, 11, 12, 13],
+        2: [14, 15, 16, 17, 18, 19, 20],
+        3: [21, 22, 23, 24, 25, 26, 27],
+    }
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
 
     train_dataset = ICLData(train_path)
-    # train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
+    train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
 
     test_dataset = ICLData(test_path)
-    # test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
+    test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
 
-    training_args = TrainingArguments(
-        num_train_epochs=,
-        per_device_train_batch_size=para_dict["bs"],
-        learning_rate=para_dict["lr"],
-        warmup_steps=args.warmup_steps,
-        weight_decay=args.weight_decay,
-        data_collator=collator,
-        fp16=True
-    )
-    if args.gpt2.startswith("gpt2"):
-        optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
-    elif args.gpt2.startswith("gpt-j"):
-        # add 8 bit Adam to gpt-j fine-tuning
-        optimizer = bnb.optim.Adam8bit(model.parameters(), lr=para_dict["lr"], eps=1e-8, min_8bit_size=16384)
-
+    optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
 
     for epoch in tqdm(range(para_dict["steps"])):
-        train_labels, train_predict, train_loss = train(model, train_dataloader, optimizer, scheduler, device)
+        train_labels, train_predict, train_loss = train(args, model, train_dataloader, optimizer, scheduler, device)
         train_acc = accuracy_score(train_labels, train_predict)
         print("-Epoch: %.5f  - train_loss: %.5f  - train_acc: %.5f " % (epoch, train_loss, train_acc))
 
@@ -203,6 +191,7 @@ def main():
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
 
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--out_dir", type=str, default="hyperparameter")
@@ -263,6 +252,7 @@ def main():
     save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
     with open(save_path, "w") as f:
         json.dump(all_paras[best_f1_index], f)
+    print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":
