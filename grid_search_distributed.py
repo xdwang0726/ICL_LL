@@ -11,6 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification
+from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 
 def load_label(dataset):
     data_path = os.path.join("config/tasks", "{}.json".format(dataset))
@@ -146,11 +147,42 @@ def grid_para(para_list):
 
     return all_paras
 
+class GPTJClassificationParallel(GPTJForSequenceClassification):
+    def __int__(self, config):
+        super().__init__(config)
+
+        self.model_parallel = True
+        self.device_map = {
+            0: [0, 1, 2, 3, 4, 5, 6],
+            1: [7, 8, 9, 10, 11, 12, 13],
+            2: [14, 15, 16, 17, 18, 19, 20],
+            3: [21, 22, 23, 24, 25, 26, 27],
+        }
+
+    def parallelize(self, device_map=None):
+        # Check validity of device_map
+        self.device_map = (
+            get_device_map(len(self.h), range(torch.cuda.device_count())) if device_map is None else device_map
+        )
+        assert_device_map(self.device_map, len(self.h))
+        self.model_parallel = True
+        self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
+        self.last_device = "cuda:" + str(max(self.device_map.keys()))
+        self.wte = self.wte.to(self.first_device)
+        # Load onto devices
+        for k, v in self.device_map.items():
+            for block in v:
+                cuda_device = "cuda:" + str(k)
+                self.h[block] = self.h[block].to(cuda_device)
+        # ln_f to last
+        self.ln_f = self.ln_f.to(self.last_device)
+
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
     model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-    model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+    model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+
     model.model_parallel = True
     model.device_map = {
         0: [0, 1, 2, 3, 4, 5, 6],
