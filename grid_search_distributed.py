@@ -160,13 +160,8 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
     def __int__(self, config):
         super().__init__(config)
 
-        self.model_parallel = True
-        self.device_map = {
-            0: [0, 1, 2, 3, 4, 5, 6],
-            1: [7, 8, 9, 10, 11, 12, 13],
-            2: [14, 15, 16, 17, 18, 19, 20],
-            3: [21, 22, 23, 24, 25, 26, 27],
-        }
+        self.model_parallel = False
+        self.device_map = None
 
     def forward(
         self,
@@ -261,7 +256,6 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
             attentions=transformer_outputs.attentions,
         )
 
-
     def parallelize(self, device_map=None):
         # Check validity of device_map
         self.device_map = (
@@ -271,7 +265,6 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         self.transformer.parallelize(self.device_map)
         self.score = self.score.to(self.transformer.first_device)
         self.model_parallel = True
-
 
     def deparallelize(self):
         self.transformer.deparallelize()
