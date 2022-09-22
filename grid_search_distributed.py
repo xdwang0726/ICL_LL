@@ -155,6 +155,7 @@ def grid_para(para_list):
 
     return all_paras
 
+
 class GPTJClassificationParallel(GPTJForSequenceClassification):
     def __int__(self, config):
         super().__init__(config)
@@ -166,7 +167,6 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
             2: [14, 15, 16, 17, 18, 19, 20],
             3: [21, 22, 23, 24, 25, 26, 27],
         }
-
 
     def forward(
         self,
@@ -299,6 +299,10 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
 
     train_dataset = ICLData(train_path)
     train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
+
+    model.deparallelize()
+    model.to(device)
+    model.parallelize(model.device_map)
 
     test_dataset = ICLData(test_path)
     test_dataloader = DataLoader(test_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
