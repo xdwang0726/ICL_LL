@@ -162,9 +162,9 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
     def parallelize(self, device_map=None):
         # Check validity of device_map
         self.device_map = (
-            get_device_map(len(self.h), range(torch.cuda.device_count())) if device_map is None else device_map
+            get_device_map(len(self.transformer.h), range(torch.cuda.device_count())) if device_map is None else device_map
         )
-        assert_device_map(self.device_map, len(self.h))
+        assert_device_map(self.device_map, len(self.transformer.h))
         self.model_parallel = True
         self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
         self.last_device = "cuda:" + str(max(self.device_map.keys()))
