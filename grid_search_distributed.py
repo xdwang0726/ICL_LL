@@ -1,7 +1,6 @@
 import argparse
 import itertools
 import json
-import logging
 import os
 import random
 from typing import Optional, Tuple, Union
@@ -14,6 +13,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification
+from transformers import logging
 from transformers.modeling_outputs import SequenceClassifierOutputWithPast
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 
