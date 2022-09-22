@@ -183,6 +183,13 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
     model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
+    model.model_parallel = True
+    model.device_map = {
+        0: [0, 1, 2, 3, 4, 5, 6],
+        1: [7, 8, 9, 10, 11, 12, 13],
+        2: [14, 15, 16, 17, 18, 19, 20],
+        3: [21, 22, 23, 24, 25, 26, 27],
+    }
     model.config.pad_token_id = model.config.eos_token_id
     model.parallelize(model.device_map)
     model.to(device)
