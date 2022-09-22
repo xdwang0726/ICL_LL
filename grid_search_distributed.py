@@ -191,8 +191,8 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         3: [21, 22, 23, 24, 25, 26, 27],
     }
     model.config.pad_token_id = model.config.eos_token_id
-    model.parallelize(model.device_map)
     model.to(device)
+    model.parallelize(model.device_map)
 
     train_dataset = ICLData(train_path)
     train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
