@@ -168,7 +168,7 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         self.model_parallel = True
         self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
         self.last_device = "cuda:" + str(max(self.device_map.keys()))
-        self.transformer.wte = self.wte.to(self.first_device)
+        self.transformer.wte = self.transformer.wte.to(self.first_device)
         # Load onto devices
         for k, v in self.device_map.items():
             for block in v:
