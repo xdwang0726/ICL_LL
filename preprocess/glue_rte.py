@@ -18,16 +18,22 @@ class Glue_RTE(FewshotGymClassificationDataset):
         self.task_type = "classification"
 
         # for classification tasks, specify the meaning of each label
+        # self.label = {
+        #     0: "entailment",
+        #     1: "not_entailment",
+        # }
         self.label = {
-            0: "entailment",
-            1: "not_entailment",
+            0: "True",
+            1: "False",
         }
 
     def map_hf_dataset_to_list(self, hf_dataset, split_name):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
-            lines.append(("sentence 1: " + datapoint["sentence1"] + " [SEP] sentence 2: " + datapoint["sentence2"], self.label[datapoint["label"]]))
+            # lines.append(("sentence 1: " + datapoint["sentence1"] + " [SEP] sentence 2: " + datapoint["sentence2"], self.label[datapoint["label"]]))
+            lines.append((datapoint["sentence1"] + " question: " + datapoint["sentence2"] + " True or False?",
+                          self.label[datapoint["label"]]))
         return lines
 
     def load_dataset(self):
@@ -38,7 +44,7 @@ def main():
     dataset = Glue_RTE()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_level/")
 
 
 if __name__ == "__main__":

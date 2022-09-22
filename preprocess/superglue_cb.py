@@ -19,15 +19,10 @@ class Superglue_CB(FewshotGymClassificationDataset):
         self.task_type = "classification"
 
         # for classification tasks, specify the meaning of each label
-        # self.label = {
-        #     0: "entailment",
-        #     1: "contradiction",
-        #     2: "neutral",
-        # }
         self.label = {
-            0: "true",
-            1: "false",
-            2: "neither",
+            0: "entailment",
+            1: "contradiction",
+            2: "neutral",
         }
 
     def map_hf_dataset_to_list(self, hf_dataset, split_name):
@@ -35,7 +30,7 @@ class Superglue_CB(FewshotGymClassificationDataset):
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
             # lines.append(("premise: " + datapoint["premise"] + " [SEP] hypothesis: " + datapoint["hypothesis"], self.label[datapoint["label"]]))
-            lines.append((datapoint["premise"] + " question: " + datapoint["hypothesis"] + ". true, false, or neither?",
+            lines.append((datapoint["premise"] + " question: " + datapoint["hypothesis"] + ". Entailment, contradiction, or neutral?",
                           self.label[datapoint["label"]]))
             #lines.append(json.dumps({
             #    "input": "premise: " + datapoint["premise"] + " hypothesis: " + datapoint["hypothesis"],

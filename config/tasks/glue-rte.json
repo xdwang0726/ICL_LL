@@ -1,1 +1,1 @@
-{"task_type": "classification", "options": ["entailment", "not_entailment"]}
+{"task_type": "classification", "options": ["True", "False"]}

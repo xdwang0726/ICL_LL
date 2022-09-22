@@ -19,11 +19,17 @@ class AGNews(FewshotGymClassificationDataset):
         self.task_type = "classification"
 
         # for classification tasks, specify the meaning of each label
+        # self.label = {
+        #     0: "World",
+        #     1: "Sports",
+        #     2: "Business",
+        #     3: "Sci/Tech",
+        # }
         self.label = {
             0: "World",
             1: "Sports",
             2: "Business",
-            3: "Sci/Tech",
+            3: "Science",
         }
 
     def get_train_test_lines(self, dataset):
@@ -39,7 +45,8 @@ class AGNews(FewshotGymClassificationDataset):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
-            lines.append((datapoint["text"], self.label[datapoint["label"]]))
+            sentence = datapoint["text"].replace(' #39;s', '\'s').replace(' quot;', "\"").replace('\\', " ").replace(' #39;ll', "'ll")
+            lines.append((sentence, self.label[datapoint["label"]]))
         return lines
 
     def load_dataset(self):
@@ -50,7 +57,7 @@ def main():
     dataset = AGNews()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
 
 
 if __name__ == "__main__":

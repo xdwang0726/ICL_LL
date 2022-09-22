@@ -17,4 +17,9 @@
 #              'trec.py',
 #              'tweet_eval.py']
 
-ALL_TASKS = ['superglue_cb.py']
+ALL_TASKS = ['agnews.py',
+             'superglue_cb.py',
+             'glue_rte.py',
+             'glue_sst2.py',
+             'rotten_tomatoes.py',
+             'trec.py']

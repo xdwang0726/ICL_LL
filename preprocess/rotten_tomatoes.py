@@ -27,7 +27,8 @@ class RottenTomatos(FewshotGymClassificationDataset):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
-            lines.append((datapoint["text"], self.label[datapoint["label"]]))
+            sentence = datapoint["text"].replace(" 's", "'s").replace('`` ', '"').replace(" ''", '"').replace(' ?', '?').replace(' ,', ',').replace(' .', '.')  # basic cleaning
+            lines.append((sentence, self.label[datapoint["label"]]))
         return lines
 
     def load_dataset(self):
@@ -38,7 +39,7 @@ def main():
     dataset = RottenTomatos()
 
     for seed in [100, 13, 21, 42, 87]:
-        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_imbalance/")
+        train, dev, test = dataset.generate_k_shot_data(k=16, seed=seed, path="../data_noisy_label/")
 
 
 if __name__ == "__main__":

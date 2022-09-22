@@ -54,7 +54,8 @@ class TREC(FewshotGymClassificationDataset):
         lines = []
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
-            lines.append((datapoint["text"], self.label[datapoint["label-coarse"]]))
+            sentence = datapoint["text"].replace(" 's", "'s").replace('`` ', '"').replace(" ''",'"').replace(' ?','?').replace(' ,',',')  # basic cleaning
+            lines.append((sentence, self.label[datapoint["label-coarse"]]))
         return lines
 
     def load_dataset(self):
