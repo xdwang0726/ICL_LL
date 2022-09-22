@@ -47,7 +47,7 @@ CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-l
 # Label distribution 
 Create data with different imbalance ratio
 ```
-python _build_gym.py --build --n_proc=40 --do_test 
+python _build_gym.py --build --n_proc=6 --do_test 
 ```
 ## In-context Learning
 To run the evaluation of different imbalance ratio
