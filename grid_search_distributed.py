@@ -168,7 +168,6 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         assert_device_map(self.device_map, len(self.transformer.h))
         self.transformer.parallelize(self.device_map)
         self.score = self.score.to(self.transformer.last_device)
-        self.num_labels = self.num_labels.to(self.transformer.last_device)
         self.model_parallel = True
         # self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
         # self.last_device = "cuda:" + str(max(self.device_map.keys()))
