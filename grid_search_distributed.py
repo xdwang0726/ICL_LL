@@ -166,7 +166,7 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         )
         assert_device_map(self.device_map, len(self.transformer.h))
         self.transformer.parallelize(self.device_map)
-        self.score = self.score.to(self.transformer.first_device)
+        self.score = self.score.to(self.transformer.last_device)
         self.model_parallel = True
         # self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
         # self.last_device = "cuda:" + str(max(self.device_map.keys()))
@@ -178,6 +178,13 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         #         self.transformer.h[block] = self.transformer.h[block].to(cuda_device)
         # # ln_f to last
         # self.transformer.ln_f = self.transformer.ln_f.to(self.last_device)
+
+    def deparallelize(self):
+        self.transformer.deparallelize()
+        self.transformer = self.transformer.to("cpu")
+        self.score = self.score.to("cpu")
+        self.model_parallel = False
+        torch.cuda.empty_cache()
 
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
