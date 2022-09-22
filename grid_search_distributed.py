@@ -173,9 +173,9 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         for k, v in self.device_map.items():
             for block in v:
                 cuda_device = "cuda:" + str(k)
-                self.h[block] = self.h[block].to(cuda_device)
+                self.transformer.h[block] = self.transformer.h[block].to(cuda_device)
         # ln_f to last
-        self.ln_f = self.ln_f.to(self.last_device)
+        self.transformer.ln_f = self.transformer.ln_f.to(self.last_device)
 
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
