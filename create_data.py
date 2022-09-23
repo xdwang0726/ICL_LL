@@ -209,7 +209,7 @@ if __name__=='__main__':
     parser.add_argument("--variant", type=str, default="random", required=True)
     parser.add_argument("--method", type=str, default=None)
 
-    parser.add_argument("--data_dir", type=str, default="data")
+    parser.add_argument("--data_dir", type=str, default="data_noisy_label")
     parser.add_argument("--config_dir", type=str, default="config")
     parser.add_argument("--corpus_path", type=str, default=None)
 
