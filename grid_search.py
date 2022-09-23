@@ -3,16 +3,22 @@ import itertools
 import json
 import os
 import random
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, f1_score
+from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import GPT2Tokenizer, AutoTokenizer, GPT2Config, GPT2ForSequenceClassification, GPTJConfig, \
-    GPTJForSequenceClassification
+from transformers import GPT2Config, GPT2ForSequenceClassification
+from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification
+from transformers import logging
+from transformers.modeling_outputs import SequenceClassifierOutputWithPast
+from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
 
+logger = logging.get_logger(__name__)
 
 def load_label(dataset):
     data_path = os.path.join("config/tasks", "{}.json".format(dataset))
@@ -43,6 +49,124 @@ class ICLData(Dataset):
 
     def __getitem__(self, item):
         return {'text': self.texts[item], 'label': self.labels[item]}
+
+
+class GPTJClassificationParallel(GPTJForSequenceClassification):
+    def __int__(self, config):
+        super().__init__(config)
+
+        self.model_parallel = False
+        self.device_map = None
+
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor]]] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        token_type_ids: Optional[torch.LongTensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        head_mask: Optional[torch.FloatTensor] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, SequenceClassifierOutputWithPast]:
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        transformer_outputs = self.transformer(
+            input_ids,
+            past_key_values=past_key_values,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        hidden_states = transformer_outputs[0]
+
+        if self.model_parallel:
+            torch.cuda.set_device(self.transformer.first_device)
+            hidden_states = hidden_states.to(self.score.weight.device)
+
+        logits = self.score(hidden_states)
+
+        if input_ids is not None:
+            batch_size = input_ids.shape[0]
+        else:
+            batch_size = inputs_embeds.shape[0]
+
+        if self.config.pad_token_id is None and batch_size != 1:
+            raise ValueError("Cannot handle batch sizes > 1 if no padding token is defined.")
+        if self.config.pad_token_id is None:
+            sequence_lengths = -1
+        else:
+            if input_ids is not None:
+                sequence_lengths = torch.ne(input_ids, self.config.pad_token_id).sum(-1) - 1
+            else:
+                sequence_lengths = -1
+                logger.warning(
+                    f"{self.__class__.__name__} will not detect padding tokens in `inputs_embeds`. Results may be "
+                    "unexpected if using padding tokens in conjunction with `inputs_embeds.`"
+                )
+
+        pooled_logits = logits[torch.arange(batch_size, device=logits.device), sequence_lengths]
+
+        loss = None
+        if labels is not None:
+            if self.config.problem_type is None:
+                if self.num_labels == 1:
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
+                else:
+                    self.config.problem_type = "multi_label_classification"
+
+            if self.config.problem_type == "regression":
+                loss_fct = MSELoss()
+                if self.num_labels == 1:
+                    loss = loss_fct(pooled_logits.squeeze(), labels.squeeze())
+                else:
+                    loss = loss_fct(pooled_logits, labels)
+            elif self.config.problem_type == "single_label_classification":
+                loss_fct = CrossEntropyLoss()
+                loss = loss_fct(pooled_logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
+                loss_fct = BCEWithLogitsLoss()
+                loss = loss_fct(pooled_logits, labels)
+        if not return_dict:
+            output = (pooled_logits,) + transformer_outputs[1:]
+            return ((loss,) + output) if loss is not None else output
+
+        return SequenceClassifierOutputWithPast(
+            loss=loss,
+            logits=pooled_logits,
+            past_key_values=transformer_outputs.past_key_values,
+            hidden_states=transformer_outputs.hidden_states,
+            attentions=transformer_outputs.attentions,
+        )
+
+    def parallelize(self, device_map=None):
+        # Check validity of device_map
+        self.device_map = (
+            get_device_map(len(self.transformer.h), range(torch.cuda.device_count())) if device_map is None else device_map
+        )
+        assert_device_map(self.device_map, len(self.transformer.h))
+        self.transformer.parallelize(self.device_map)
+        self.score = self.score.to(self.transformer.first_device)
+        self.model_parallel = True
+
+    def deparallelize(self):
+        self.transformer.deparallelize()
+        self.transformer = self.transformer.to("cpu")
+        self.score = self.score.to("cpu")
+        self.model_parallel = False
+        torch.cuda.empty_cache()
 
 
 class Gpt2ClassificationCollator(object):
@@ -155,13 +279,22 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model_config = GPT2Config.from_pretrained(args.gpt2, output_hidden_states=False, num_labels=num_label)
         model = GPT2ForSequenceClassification.from_pretrained(args.gpt2, config=model_config)
         model.config.pad_token_id = model.config.eos_token_id
+        model.to(device)
     elif args.gpt2.startswith("gpt-j"):
         model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
         model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
+        model.model_parallel = True
+        model.device_map = {
+            0: [0, 1, 2, 3, 4, 5, 6],
+            1: [7, 8, 9, 10, 11, 12, 13],
+            2: [14, 15, 16, 17, 18, 19, 20],
+            3: [21, 22, 23, 24, 25, 26, 27],
+        }
 
-    model.config.pad_token_id = model.config.eos_token_id
-    model.to(device)
+        model.config.pad_token_id = model.config.eos_token_id
+        model.to(device)
+        model.parallelize(model.device_map)
 
     train_dataset = ICLData(train_path)
     train_dataloader = DataLoader(train_dataset, batch_size=para_dict["bs"], shuffle=True, collate_fn=collator)
@@ -172,6 +305,11 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     optimizer = AdamW(model.parameters(), lr=para_dict["lr"], eps=1e-8)
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=para_dict["steps"])
+
+    if args.distributed:
+        model.deparallelize()
+        model.to(device)
+        model.parallelize(model.device_map)
 
     for epoch in tqdm(range(para_dict["steps"])):
         train_labels, train_predict, train_loss = train(args, model, train_dataloader, optimizer, scheduler, device)
@@ -201,6 +339,7 @@ def main():
     parser.add_argument('--imbalance_level', type=str, default='low',
                         help="imbalance level of labels, choosing from low, medium, high")
     parser.add_argument('--label_imbalance', action='store_true')
+    parser.add_argument('--distributed', action='store_true')
 
     args = parser.parse_args()
 
