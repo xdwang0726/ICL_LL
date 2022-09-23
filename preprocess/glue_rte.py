@@ -32,7 +32,7 @@ class Glue_RTE(FewshotGymClassificationDataset):
         for datapoint in hf_dataset[split_name]:
             # line[0]: input; line[1]: output
             # lines.append(("sentence 1: " + datapoint["sentence1"] + " [SEP] sentence 2: " + datapoint["sentence2"], self.label[datapoint["label"]]))
-            lines.append((datapoint["sentence1"] + " question: " + datapoint["sentence2"] + " True or False?",
+            lines.append((datapoint["sentence1"] + " implies: " + datapoint["sentence2"] + " True or False?",
                           self.label[datapoint["label"]]))
         return lines
 

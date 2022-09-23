@@ -104,12 +104,13 @@ def build_gym(args):
     #              'superglue_cb.py',
     #              'trec.py',
     #              'tweet_eval.py']
-    all_tasks = ['agnews.py',
-                 'superglue_cb.py',
-                 'glue_rte.py',
-                 'glue_sst2.py',
-                 'rotten_tomatoes.py',
-                 'trec.py']
+    # all_tasks = ['agnews.py',
+    #              'superglue_cb.py',
+    #              'glue_rte.py',
+    #              'glue_sst2.py',
+    #              'rotten_tomatoes.py',
+    #              'trec.py']
+    all_tasks = ['glue_rte.py']
     assert all_tasks == ALL_TASKS
     print("Passing file checks ...")
 

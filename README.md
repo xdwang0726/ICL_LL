@@ -10,7 +10,7 @@ pip install sklearn
 
 ```
 # Preparation
-datasets are: `` ag_news``, ``dbpedia_14``, `` glue-sst2``, ``rotten_tomatoes``, ``trec``
+datasets are: `` ag_news``, ``glue-rte``, `` glue-sst2``, ``rotten_tomatoes``, ``trec``, ``superglue-cb``
 ## prepare the dataset
 ```
 cd preprocess
@@ -34,12 +34,17 @@ python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-n
 ```
 
 ## Supervised Learning
-Grid search: search hyper-parameter for each dataset 
+### Grid search: search hyper-parameter for each dataset 
+gpt2:
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --out_dir hyperparameter/noisy_label/{gpt2-large|gpt-neo|gpt-neox|gpt-j}
+CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --out_dir hyperparameter/noisy_label/{gpt2-large|gpt2-xl}
+```
+gpt-j (distributed):
+```
+python grid_search_distributed.py  --dataset {dataset} --gpt2 {gpt-j} --out_dir hyperparameter/noisy_label/gpt-j
 ```
 
-Fine-tuning and do supervised learning
+### Fine-tuning and do supervised learning
 ```
 CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --correct {100|75|50|25|0} --result_dir supervised_learning_results/noisy_label
 ```
@@ -55,11 +60,16 @@ To run the evaluation of different imbalance ratio
 python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 
 ```
 ## Supervised Learning 
-Grid search:
+### Grid search:
+gpt2:
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --label_imbalance --imbalance_level low --out_dir hyperparameter/label_imbalance/{gpt2-large|gpt-neo|gpt-neox|gpt-j}
+CUDA_VISIBLE_DEVICES=0 python grid_search.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --label_imbalance --imbalance_level low --out_dir hyperparameter/label_imbalance/{gpt2-large|gpt2-xl}
 ```
-Fine-tuning and do supervised learning
+gpt-j:
+```
+python grid_search_distributed.py  --dataset {dataset} --gpt2 {gpt-j} --label_imbalance --out_dir hyperparameter/noisy_label/gpt-j
+```
+### Fine-tuning and do supervised learning
 ```
 CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt-neo|gpt-neox|gpt-j} --label_imbalance --imbalance_level {low|medium|high} --result_dir supervised_learning_results/noisy_label
 ```
