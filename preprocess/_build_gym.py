@@ -110,7 +110,8 @@ def build_gym(args):
     #              'glue_sst2.py',
     #              'rotten_tomatoes.py',
     #              'trec.py']
-    all_tasks = ['glue_rte.py']
+    all_tasks = ['rotten_tomatoes.py',
+                 'trec.py']
     assert all_tasks == ALL_TASKS
     print("Passing file checks ...")
 

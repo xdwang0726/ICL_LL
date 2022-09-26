@@ -17,4 +17,5 @@
 #              'trec.py',
 #              'tweet_eval.py']
 
-ALL_TASKS = ['glue_rte.py']
+ALL_TASKS = ['rotten_tomatoes.py',
+             'trec.py']
