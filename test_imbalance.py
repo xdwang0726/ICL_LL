@@ -38,7 +38,7 @@ def load_data(task, split, k, seed=0, config_split=None, datasets=None, imbalanc
 
     data = []
     for dataset in datasets:
-        data_path = os.path.join("data_imbalance_old", "{}_{}".format(dataset, imbalance_level),
+        data_path = os.path.join("data_imbalance", "{}_{}".format(dataset, imbalance_level),
                                  "{}_{}_{}_{}.jsonl".format(dataset, k, seed, split))
         with open(data_path, "r") as f:
             for line in f:
