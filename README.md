@@ -3,7 +3,7 @@
 ```
 conda create --name ICL-LL python=3.8
 conda activate ICL-LL
-pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu111
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c nvidia
 pip install git+https://github.com/huggingface/transformers
 pip install accelerate
 pip install datasets
@@ -15,7 +15,7 @@ datasets are: `` ag_news``, ``glue-rte``, `` glue-sst2``, ``rotten_tomatoes``, `
 ## prepare the dataset
 ```
 cd preprocess
-python _build_gym.py --build --n_proc=6 --do_test --test_k {4|8|16|32}
+python _build_gym.py --build --n_proc=6 --do_test --test_k 16
 ```
 
 # Noisy Label
