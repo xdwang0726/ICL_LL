@@ -326,7 +326,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='cuda', type=str)
-    parser.add_argument("--seed", type=list, default=[100,13,21,42,87])
+    parser.add_argument("--seeds", type=list, default=[100,13,21,42,87])
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
