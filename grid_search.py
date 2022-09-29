@@ -326,7 +326,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='cuda', type=str)
-    parser.add_argument("--seed", type=int, default=100)
+    parser.add_argument("--seed", type=list, default=[100, 13, 21, 42, 87])
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
@@ -355,45 +355,46 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
 
     # random seed
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.device_count() > 0:
-        torch.cuda.manual_seed_all(args.seed)
+    for seed in args.seeds:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.device_count() > 0:
+            torch.cuda.manual_seed_all(seed)
 
-    label_ids = load_label(args.dataset)
-    num_label = len(label_ids)
-    collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
+        label_ids = load_label(args.dataset)
+        num_label = len(label_ids)
+        collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    if not args.label_imbalance:
-        train_data_path = os.path.join("data_noisy_label", args.dataset,
-                                       "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-        test_data_path = os.path.join("data_noisy_label", args.dataset,
-                                      "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
-    else:
-        train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-        test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+        if not args.label_imbalance:
+            train_data_path = os.path.join("data_noisy_label", args.dataset,
+                                           "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+            test_data_path = os.path.join("data_noisy_label", args.dataset,
+                                          "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
+        else:
+            train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+            test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
 
-    print("Training example path", train_data_path)
+        print("Training example path", train_data_path)
 
-    para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
-    all_paras = grid_para(para_list)
+        para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
+        all_paras = grid_para(para_list)
 
-    all_f1s = []
-    for para in all_paras:
+        all_f1s = []
+        for para in all_paras:
 
-        f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator, num_label)
+            f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator, num_label)
 
-        all_f1s.append(f1)
+            all_f1s.append(f1)
 
-    best_f1_index = np.argmax(all_f1s)
-    print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
+        best_f1_index = np.argmax(all_f1s)
+        print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-    save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
-    with open(save_path, "w") as f:
-        json.dump(all_paras[best_f1_index], f)
-    print("Hyper-parameter saved for {}!".format(args.dataset))
+        save_path = os.path.join(args.out_dir, "{}_{}.json".format(args.dataset, seed))
+        with open(save_path, "w") as f:
+            json.dump(all_paras[best_f1_index], f)
+        print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":
