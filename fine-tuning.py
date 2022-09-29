@@ -286,15 +286,6 @@ def main():
 
     seeds = args.seeds.split(",")
 
-    # get tuned hyperparameter
-    if not args.label_imbalance:
-        para_path = os.path.join(args.para_dir, "noisy_label", args.gpt2, "{}.json".format(args.dataset))
-    else:
-        para_path = os.path.join(args.para_dir, "label_imbalance", args.gpt2, "{}.json".format(args.dataset))
-
-    with open(para_path, "r") as f:
-        para = json.load(f)
-
     performance = []
     for seed in seeds:
         seed = int(seed.strip())
@@ -304,6 +295,15 @@ def main():
         torch.manual_seed(seed)
         if torch.cuda.device_count() > 0:
             torch.cuda.manual_seed_all(seed)
+
+        # get tuned hyperparameter
+        if not args.label_imbalance:
+            para_path = os.path.join(args.para_dir, "noisy_label", args.gpt2, "{}_{}.json".format(args.dataset, seed))
+        else:
+            para_path = os.path.join(args.para_dir, "label_imbalance", args.gpt2, "{}_{}.json".format(args.dataset, seed))
+
+        with open(para_path, "r") as f:
+            para = json.load(f)
 
         label_ids = load_label(args.dataset)
         num_label = len(label_ids)

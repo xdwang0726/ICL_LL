@@ -282,7 +282,7 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model.to(device)
     elif args.gpt2.startswith("gpt-j"):
         model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-        model = GPTJForSequenceClassification.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+        model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
         model.model_parallel = True
         model.device_map = {
