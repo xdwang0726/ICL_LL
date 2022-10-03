@@ -112,8 +112,7 @@ def main(logger, args):
             assert not args.use_demonstrations or len(curr_train_data)==args.k, \
                     (args.use_demonstrations, len(curr_train_data), args.k)
 
-            print("dp", dp["task"])
-            config_file = "config/tasks/{}.json".format(test_task)
+            config_file = "config/tasks/{}.json".format(args.task_name)
             assert os.path.exists(config_file), config_file
             with open(config_file, "r") as f:
                 config = json.load(f)
@@ -244,6 +243,7 @@ if __name__=='__main__':
     parser.add_argument("--log_file", default=None, type=str)
 
     parser.add_argument("--task", type=str, default=None)
+    parser.add_argument("--task_name", type=str, default=None)
     parser.add_argument("--dataset", type=str, default=None)
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--seed", type=str, default="100")
