@@ -21,12 +21,10 @@ from collections import Counter, defaultdict
 from torch.utils.data import TensorDataset, DataLoader, SequentialSampler
 from transformers import GPT2Tokenizer, AutoTokenizer
 
-from icl.data import MetaICLData
-# from icl.data_new_prompt import MetaICLData
-from icl.model import MetaICLModel
+from metaicl.data import MetaICLData
+from metaicl.model import MetaICLModel
 
 from utils.data import load_data
-
 
 def main(logger, args):
     assert (args.dataset is not None and args.task is None) or (args.dataset is None and args.task is not None)
@@ -85,11 +83,9 @@ def main(logger, args):
 
         ### data ...
         train_data = load_data(args.task, "train", args.k, seed=seed, config_split=config_split,
-                               datasets=None if args.dataset is None else args.dataset.split(","),
-                               label_imbalance=args.label_imbalance, imbalance_level=args.imbalance_level)
+                               datasets=None if args.dataset is None else args.dataset.split(","))
         dev_data = load_data(args.task, args.split, args.k, seed=seed, config_split=config_split,
-                             datasets=None if args.dataset is None else args.dataset.split(","), is_null=args.is_null,
-                             label_imbalance = args.label_imbalance, imbalance_level=args.imbalance_level)
+                             datasets=None if args.dataset is None else args.dataset.split(","), is_null=args.is_null)
 
         if args.use_random_english_words:
             from english_words import english_words_set
@@ -120,10 +116,10 @@ def main(logger, args):
             assert os.path.exists(config_file), config_file
             with open(config_file, "r") as f:
                 config = json.load(f)
-            is_classification = config["task_type"] == "classification"
+            is_classification = config["task_type"]=="classification"
             if is_classification:
                 options = curr_dev_data[0]["options"]
-                assert np.all([d["options"] == options for d in curr_dev_data])
+                assert np.all([d["options"]==options for d in curr_dev_data])
 
             if args.use_random_english_words:
                 # create a mapping
@@ -140,7 +136,7 @@ def main(logger, args):
                     curr_dev_data[dp_idx]["options"] = new_options
 
             result = run(logger, test_task, metaicl_data, metaicl_model,
-                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines, args.label_imbalance)
+                         curr_train_data, curr_dev_data, seed, checkpoint, is_classification, add_newlines)
 
             if result is None:
                 errors.append("%s/%s" % (test_task, seed))
@@ -158,34 +154,21 @@ def main(logger, args):
 
 
 def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
-        checkpoint, is_classification, add_newlines, label_imbalance):
+        checkpoint, is_classification, add_newlines):
 
     if args.do_zeroshot:
         split_name = args.split
         if args.is_null:
             split_name += "-null"
-        if not label_imbalance:
-            cache_path = os.path.join(args.out_dir,
-                                      "{}-{}-{}{}{}{}{}.pkl".format(
-                                          task,
-                                          split_name,
-                                          metaicl_data.method,
-                                          "-k={}".format(args.k) if args.use_demonstrations else "",
-                                          "-s={}".format(seed) if args.use_demonstrations or args.use_random_english_words else "",
-                                          "" if add_newlines else "-no-newlines",
-                                          "-randomEnglish" if args.use_random_english_words else ""))
-        else:
-            cache_path = os.path.join(args.out_dir,
-                                      "{}-{}-{}-{}{}{}{}{}.pkl".format(
-                                          task,
-                                          args.imbalance_level,
-                                          split_name,
-                                          metaicl_data.method,
-                                          "-k={}".format(args.k) if args.use_demonstrations else "",
-                                          "-s={}".format(
-                                              seed) if args.use_demonstrations or args.use_random_english_words else "",
-                                          "" if add_newlines else "-no-newlines",
-                                          "-randomEnglish" if args.use_random_english_words else ""))
+        cache_path = os.path.join(args.out_dir,
+                                  "{}-{}-{}{}{}{}{}.pkl".format(
+                                      task,
+                                      split_name,
+                                      metaicl_data.method,
+                                      "-k={}".format(args.k) if args.use_demonstrations else "",
+                                      "-s={}".format(seed) if args.use_demonstrations or args.use_random_english_words else "",
+                                      "" if add_newlines else "-no-newlines",
+                                      "-randomEnglish" if args.use_random_english_words else ""))
     else:
         assert add_newlines
         cache_path = os.path.join(args.out_dir, "{}-{}-{}{}{}{}.pkl".format(
@@ -220,7 +203,7 @@ def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
         with open(cache_path, "wb") as f:
             pkl.dump(losses, f)
 
-    assert len(losses) == len(metaicl_data)
+    assert len(losses)==len(metaicl_data)
 
     if args.is_null:
         return None
@@ -249,7 +232,6 @@ def run(logger, task, metaicl_data, metaicl_model, train_data, dev_data, seed,
 
     return perf
 
-
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
@@ -276,10 +258,6 @@ if __name__=='__main__':
     parser.add_argument("--is_null", default=False, action="store_true")
     parser.add_argument("--method", type=str, default="direct", choices=["direct", "channel"])
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
-
-    parser.add_argument('--label_imbalance', action='store_true')
-    parser.add_argument('--imbalance_level', type=str, default='low',
-                        help="imbalance level of labels, choosing from low, medium, high")
 
     args = parser.parse_args()
 
