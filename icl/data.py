@@ -19,7 +19,6 @@ from multiprocessing import Pool
 
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
-
 class MetaICLData(object):
 
     def __init__(self, logger=None, tokenizer=None, method="channel", use_demonstrations=True, k=16,
