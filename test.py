@@ -112,6 +112,7 @@ def main(logger, args):
             assert not args.use_demonstrations or len(curr_train_data)==args.k, \
                     (args.use_demonstrations, len(curr_train_data), args.k)
 
+            print("dp", dp["task"])
             config_file = "config/tasks/{}.json".format(test_task)
             assert os.path.exists(config_file), config_file
             with open(config_file, "r") as f:
