@@ -21,8 +21,8 @@ from collections import Counter, defaultdict
 from torch.utils.data import TensorDataset, DataLoader, SequentialSampler
 from transformers import GPT2Tokenizer, AutoTokenizer
 
-from metaicl.data import MetaICLData
-from metaicl.model import MetaICLModel
+from icl.data import MetaICLData
+from icl.model import MetaICLModel
 
 from utils.data import load_data
 
