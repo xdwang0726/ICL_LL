@@ -25,7 +25,6 @@ def main():
                 dp = json.loads(line)
                 if dp["output"] in train_labels:
                     train_labels[dp["output"]] += 1
-
         num_labels = list(train_labels.values()).sort()
         print(num_labels)
         largest = num_labels[-1]
