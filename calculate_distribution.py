@@ -26,9 +26,8 @@ def main():
                 if dp["output"] in train_labels:
                     train_labels[dp["output"]] += 1
         num_labels = list(train_labels.values())
-        print(num_labels)
-        largest = num_labels[-1]
-        smallest = num_labels[0]
+        largest = max(num_labels)
+        smallest = min(num_labels)
         imbalance_ratio = smallest / largest
     ratios.append(imbalance_ratio)
     avg_ratio = sum(ratios) / len(ratios)
