@@ -6,9 +6,9 @@ import json
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', default='cuda', type=str)
-    parser.add_argument('--dataset', default='cuda', type=str)
-    parser.add_argument('--seeds', default='cuda', type=str)
+    parser.add_argument('--task', default="ag_news", type=str)
+    parser.add_argument('--dataset', default="ag_news", type=str)
+    parser.add_argument('--seeds', default=[100,13,21,42,87], type=list)
     args = parser.parse_args()
 
     ratios = []
