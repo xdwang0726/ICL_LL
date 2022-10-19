@@ -12,7 +12,7 @@ def main():
     args = parser.parse_args()
 
     ratios = []
-    with open(os.path.join("config", args.task + ".json"), "r") as f:
+    with open(os.path.join("config/tasks/", args.task + ".json"), "r") as f:
         config = json.load(f)
         labels = config["options"]
 
