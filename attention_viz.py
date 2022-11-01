@@ -6,6 +6,8 @@ import json
 import random
 import tqdm
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # random select demonstration examples
 correct_demonstration_data_dir = "/data/v-xindiwang/ICL_LL/data_noisy_label/rotten_tomatoes/rotten_tomatoes_16_100_train.jsonl"
 corrputed_demonstration_data_dir = "/data/v-xindiwang/ICL_LL/data_noisy_label/rotten_tomatoes_0_correct/rotten_tomatoes_0_correct_16_21_train.jsonl"
@@ -33,6 +35,7 @@ model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", output_atten
 # model = AutoModelForCausalLM.from_pretrained("gpt2-xl", output_attentions=True)
 # model = AutoModelForCausalLM.from_pretrained("gpt2-large", output_attentions=True)
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+model.to(device)
 
 # all gold labels
 scores = []
@@ -56,7 +59,7 @@ while i < 20:
     correct_position_5 = correct_length_1 + correct_length_2 + correct_length_3 + correct_length_4 + correct_length_5 - 5 - 3
     # print(correct_position_1, correct_position_2, correct_position_3, correct_position_4, correct_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
@@ -116,7 +119,7 @@ while i < 20:
     position_5 = length_1 + length_2 + length_3 + length_4 + length_5 - 5 - 3
     # print(correct_position_1, correct_position_2, correct_position_3, correct_position_4, correct_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
@@ -193,7 +196,7 @@ while i < 20:
     position_5 = length_1 + length_2 + length_3 + length_4 + length_5 - 5 - 3
     # print(correct_position_1, correct_position_2, correct_position_3, correct_position_4, correct_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
@@ -271,7 +274,7 @@ while i < 20:
     position_5 = length_1 + length_2 + length_3 + length_4 + length_5 - 5 - 3
     # print(correct_position_1, correct_position_2, correct_position_3, correct_position_4, correct_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
@@ -348,7 +351,7 @@ while i < 20:
     position_5 = length_1 + length_2 + length_3 + length_4 + length_5 - 5 - 3
     # print(correct_position_1, correct_position_2, correct_position_3, correct_position_4, correct_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
@@ -409,7 +412,7 @@ while i < 20:
     corrputed_position_5 = corrputed_length_1 + corrputed_length_2 + corrputed_length_3 + corrputed_length_4 + corrputed_length_5 - 5 - 3
     # print(corrputed_position_1, corrputed_position_2, corrputed_position_3, corrputed_position_4, corrputed_position_5)
 
-    inputs = tokenizer.encode(input_string, return_tensors='pt')
+    inputs = tokenizer.encode(input_string, return_tensors='pt').to(device)
     tokens = tokenizer.convert_ids_to_tokens(inputs[0])
 
     outputs = model(inputs)
