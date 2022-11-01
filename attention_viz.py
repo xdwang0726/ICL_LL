@@ -4,6 +4,7 @@ from bertviz import head_view
 import torch
 import json
 import random
+import tqdm
 
 # random select demonstration examples
 correct_demonstration_data_dir = "/data/v-xindiwang/ICL_LL/data_noisy_label/rotten_tomatoes/rotten_tomatoes_16_100_train.jsonl"
@@ -88,8 +89,8 @@ while i < 20:
     corrupted_demonstration = random.sample(corrupted_examples, k=1)
     examples = correct_demonstration + corrupted_demonstration
     demonstration = {}
-    for i, example in enumerate(examples):
-        demonstration[i] = example
+    for j, example in enumerate(examples):
+        demonstration[j] = example
     item = list(demonstration.items())
     random.shuffle(item)
     demonstration = dict(item)
@@ -137,11 +138,11 @@ while i < 20:
 
     correct_prob = 0
     corrupted_prob = 0
-    for i in range(5):
-        if i not in random_corrupted_index:
-            correct_prob += prob_list[i]
+    for k in range(5):
+        if k not in random_corrupted_index:
+            correct_prob += prob_list[k]
         else:
-            corrupted_prob += prob_list[i]
+            corrupted_prob += prob_list[k]
 
     correct_prob = correct_prob / 4
 
@@ -167,8 +168,8 @@ while i < 20:
     corrupted_demonstration = random.sample(corrupted_examples, k=2)
     examples = correct_demonstration + corrupted_demonstration
     demonstration = {}
-    for i, example in enumerate(examples):
-        demonstration[i] = example
+    for j, example in enumerate(examples):
+        demonstration[j] = example
     item = list(demonstration.items())
     random.shuffle(item)
     demonstration = dict(item)
@@ -214,11 +215,11 @@ while i < 20:
 
     correct_prob = 0
     corrupted_prob = 0
-    for i in range(5):
-        if i not in random_corrupted_index:
-            correct_prob += prob_list[i]
+    for k in range(5):
+        if k not in random_corrupted_index:
+            correct_prob += prob_list[k]
         else:
-            corrupted_prob += prob_list[i]
+            corrupted_prob += prob_list[k]
 
     correct_prob = correct_prob / 3
     corrupted_prob = corrupted_prob / 2
@@ -245,8 +246,8 @@ while i < 20:
     corrupted_demonstration = random.sample(corrupted_examples, k=3)
     examples = correct_demonstration + corrupted_demonstration
     demonstration = {}
-    for i, example in enumerate(examples):
-        demonstration[i] = example
+    for j, example in enumerate(examples):
+        demonstration[j] = example
     item = list(demonstration.items())
     random.shuffle(item)
     demonstration = dict(item)
@@ -292,11 +293,11 @@ while i < 20:
 
     correct_prob = 0
     corrupted_prob = 0
-    for i in range(5):
-        if i not in random_corrupted_index:
-            correct_prob += prob_list[i]
+    for k in range(5):
+        if k not in random_corrupted_index:
+            correct_prob += prob_list[k]
         else:
-            corrupted_prob += prob_list[i]
+            corrupted_prob += prob_list[k]
 
     correct_prob = correct_prob / 2
     corrupted_prob = corrupted_prob / 3
@@ -322,8 +323,8 @@ while i < 20:
     corrupted_demonstration = random.sample(corrupted_examples, k=4)
     examples = correct_demonstration + corrupted_demonstration
     demonstration = {}
-    for i, example in enumerate(examples):
-        demonstration[i] = example
+    for j, example in enumerate(examples):
+        demonstration[j] = example
     item = list(demonstration.items())
     random.shuffle(item)
     demonstration = dict(item)
@@ -369,11 +370,11 @@ while i < 20:
 
     correct_prob = 0
     corrupted_prob = 0
-    for i in range(5):
-        if i not in random_corrupted_index:
-            correct_prob += prob_list[i]
+    for k in range(5):
+        if k not in random_corrupted_index:
+            correct_prob += prob_list[k]
         else:
-            corrupted_prob += prob_list[i]
+            corrupted_prob += prob_list[k]
 
     corrupted_prob = corrupted_prob / 4
 
