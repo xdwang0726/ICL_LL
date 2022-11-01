@@ -106,11 +106,11 @@ while i < 20:
     #     print(demonstration)
     #     print(random_corrupted_index)
     input_string = all_demonstraion + test_examples
-    length_1 = len(tokenizer.encode(all_demonstraion[0], return_tensors='pt')[0])
-    length_2 = len(tokenizer.encode(all_demonstraion[1], return_tensors='pt')[0])
-    length_3 = len(tokenizer.encode(all_demonstraion[2], return_tensors='pt')[0])
-    length_4 = len(tokenizer.encode(all_demonstraion[3], return_tensors='pt')[0])
-    length_5 = len(tokenizer.encode(all_demonstraion[4], return_tensors='pt')[0])
+    length_1 = len(tokenizer.encode(demonstraion_values[0], return_tensors='pt')[0])
+    length_2 = len(tokenizer.encode(demonstraion_values[1], return_tensors='pt')[0])
+    length_3 = len(tokenizer.encode(demonstraion_values[2], return_tensors='pt')[0])
+    length_4 = len(tokenizer.encode(demonstraion_values[3], return_tensors='pt')[0])
+    length_5 = len(tokenizer.encode(demonstraion_values[4], return_tensors='pt')[0])
     # print(correct_length_1, correct_length_2, correct_length_3, correct_length_4, correct_length_5)
     position_1 = length_1 - 1 - 3
     position_2 = length_1 + length_2 - 2 - 3
@@ -183,11 +183,11 @@ while i < 20:
         if idx in demonstration:
             random_corrupted_index.append(list(demonstration).index(idx))
     input_string = all_demonstraion + test_examples
-    length_1 = len(tokenizer.encode(all_demonstraion[0], return_tensors='pt')[0])
-    length_2 = len(tokenizer.encode(all_demonstraion[1], return_tensors='pt')[0])
-    length_3 = len(tokenizer.encode(all_demonstraion[2], return_tensors='pt')[0])
-    length_4 = len(tokenizer.encode(all_demonstraion[3], return_tensors='pt')[0])
-    length_5 = len(tokenizer.encode(all_demonstraion[4], return_tensors='pt')[0])
+    length_1 = len(tokenizer.encode(demonstraion_values[0], return_tensors='pt')[0])
+    length_2 = len(tokenizer.encode(demonstraion_values[1], return_tensors='pt')[0])
+    length_3 = len(tokenizer.encode(demonstraion_values[2], return_tensors='pt')[0])
+    length_4 = len(tokenizer.encode(demonstraion_values[3], return_tensors='pt')[0])
+    length_5 = len(tokenizer.encode(demonstraion_values[4], return_tensors='pt')[0])
     # print(correct_length_1, correct_length_2, correct_length_3, correct_length_4, correct_length_5)
     position_1 = length_1 - 1 - 3
     position_2 = length_1 + length_2 - 2 - 3
@@ -261,11 +261,11 @@ while i < 20:
         if idx in demonstration:
             random_corrupted_index.append(list(demonstration).index(idx))
     input_string = all_demonstraion + test_examples
-    length_1 = len(tokenizer.encode(all_demonstraion[0], return_tensors='pt')[0])
-    length_2 = len(tokenizer.encode(all_demonstraion[1], return_tensors='pt')[0])
-    length_3 = len(tokenizer.encode(all_demonstraion[2], return_tensors='pt')[0])
-    length_4 = len(tokenizer.encode(all_demonstraion[3], return_tensors='pt')[0])
-    length_5 = len(tokenizer.encode(all_demonstraion[4], return_tensors='pt')[0])
+    length_1 = len(tokenizer.encode(demonstraion_values[0], return_tensors='pt')[0])
+    length_2 = len(tokenizer.encode(demonstraion_values[1], return_tensors='pt')[0])
+    length_3 = len(tokenizer.encode(demonstraion_values[2], return_tensors='pt')[0])
+    length_4 = len(tokenizer.encode(demonstraion_values[3], return_tensors='pt')[0])
+    length_5 = len(tokenizer.encode(demonstraion_values[4], return_tensors='pt')[0])
     # print(correct_length_1, correct_length_2, correct_length_3, correct_length_4, correct_length_5)
     position_1 = length_1 - 1 - 3
     position_2 = length_1 + length_2 - 2 - 3
@@ -338,11 +338,11 @@ while i < 20:
         if idx in demonstration:
             random_corrupted_index.append(list(demonstration).index(idx))
     input_string = all_demonstraion + test_examples
-    length_1 = len(tokenizer.encode(all_demonstraion[0], return_tensors='pt')[0])
-    length_2 = len(tokenizer.encode(all_demonstraion[1], return_tensors='pt')[0])
-    length_3 = len(tokenizer.encode(all_demonstraion[2], return_tensors='pt')[0])
-    length_4 = len(tokenizer.encode(all_demonstraion[3], return_tensors='pt')[0])
-    length_5 = len(tokenizer.encode(all_demonstraion[4], return_tensors='pt')[0])
+    length_1 = len(tokenizer.encode(demonstraion_values[0], return_tensors='pt')[0])
+    length_2 = len(tokenizer.encode(demonstraion_values[1], return_tensors='pt')[0])
+    length_3 = len(tokenizer.encode(demonstraion_values[2], return_tensors='pt')[0])
+    length_4 = len(tokenizer.encode(demonstraion_values[3], return_tensors='pt')[0])
+    length_5 = len(tokenizer.encode(demonstraion_values[4], return_tensors='pt')[0])
     # print(correct_length_1, correct_length_2, correct_length_3, correct_length_4, correct_length_5)
     position_1 = length_1 - 1 - 3
     position_2 = length_1 + length_2 - 2 - 3
