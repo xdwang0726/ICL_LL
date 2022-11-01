@@ -23,13 +23,14 @@ with open(corrputed_demonstration_data_dir, "r") as f:
         dp = json.loads(line)
         corrupted_examples.append(dp["input"] + " \n " + dp["output"] + " \n\n ")
 
-examples = []
-test_data_dir = "/data/v-xindiwang/ICL_LL/data_imbalance/rotten_tomatoes_low/rotten_tomatoes_16_100_test.jsonl"
-with open(test_data_dir, "r") as f:
-    for line in f:
-        dp = json.loads(line)
-        examples.append(dp["input"])
-test_examples = random.choice(examples)
+# examples = []
+# test_data_dir = "/data/v-xindiwang/ICL_LL/data_imbalance/rotten_tomatoes_low/rotten_tomatoes_16_100_test.jsonl"
+# with open(test_data_dir, "r") as f:
+#     for line in f:
+#         dp = json.loads(line)
+#         examples.append(dp["input"])
+# test_examples = random.choice(examples)
+test_examples = "compassionately explores the seemingly irreconcilable situation between conservative christian parents and their estranged gay and lesbian children . \n"
 
 model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", output_attentions=True)
 # model = AutoModelForCausalLM.from_pretrained("gpt2-xl", output_attentions=True)
