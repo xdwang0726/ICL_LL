@@ -29,7 +29,7 @@ model.to(device)
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     pos_demonstration = random.choice(positive_examples)
     neg_demonstration = random.choice(negative_examples)
@@ -64,7 +64,7 @@ print(sum(neg_scores) / len(neg_scores))
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     # pos_demonstration = random.sample(positive_examples, k=2)
     # neg_demonstration = random.choice(negative_examples)
@@ -115,7 +115,7 @@ print(sum(neg_scores) / len(neg_scores))
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     # pos_demonstration = random.sample(positive_examples, k=3)
     # neg_demonstration = random.choice(negative_examples)
@@ -173,7 +173,7 @@ print(sum(neg_scores) / len(neg_scores))
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     # pos_demonstration = random.sample(positive_examples, k=4)
     # neg_demonstration = random.choice(negative_examples)
@@ -238,7 +238,7 @@ print(sum(neg_scores) / len(neg_scores))
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     # pos_demonstration = random.sample(positive_examples, k=5)
     # neg_demonstration = random.choice(negative_examples)
@@ -308,7 +308,7 @@ print(sum(neg_scores) / len(neg_scores))
 pos_scores = []
 neg_scores = []
 i = 0
-while i < 100:
+while i < 50:
     # select one positive and one negative example from the demonstration examples
     # pos_demonstration = random.sample(positive_examples, k=10)
     # neg_demonstration = random.choice(negative_examples)
