@@ -22,8 +22,8 @@ all_examples = positive_examples + negative_examples
 test_examples = random.choice(all_examples)
 
 # model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", output_attentions=True)
-model = AutoModelForCausalLM.from_pretrained("gpt2-xl", output_attentions=True)
-# model = AutoModelForCausalLM.from_pretrained("gpt2-large", output_attentions=True)
+# model = AutoModelForCausalLM.from_pretrained("gpt2-xl", output_attentions=True)
+model = AutoModelForCausalLM.from_pretrained("gpt2-large", output_attentions=True)
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 model.to(device)
 
