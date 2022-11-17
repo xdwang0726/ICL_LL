@@ -392,9 +392,16 @@ def main():
 
     # save hyper-parameter
         save_path = os.path.join(args.out_dir, "{}_{}.json".format(args.dataset, seed))
-        with open(save_path, "w") as f:
-            json.dump(all_paras[best_f1_index], f)
-        print("Hyper-parameter saved for {}!".format(args.dataset))
+        is_exit = os.path.exists(save_path)
+        if is_exit:
+            with open(save_path, "w") as f:
+                json.dump(all_paras[best_f1_index], f)
+            print("Hyper-parameter saved for {}!".format(args.dataset))
+        else:
+            os.makedirs(save_path)
+            with open(save_path, "w") as f:
+                json.dump(all_paras[best_f1_index], f)
+            print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":
