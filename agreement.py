@@ -25,7 +25,7 @@ def main():
             for line in lines:
                 icl_predictions.append(line.strip())
 
-        sl_dir = os.path.join(args.icl_dir, args.gpt2, args.dataset, "{}_{}_correct".format(args.dataset, args.correct),
+        sl_dir = os.path.join(args.sl_dir, args.gpt2, args.dataset, "{}_{}_correct".format(args.dataset, args.correct),
                               "{}_16_{}.json".format(args.dataset, seed))
         with open(sl_dir, "r") as f_sl:
             sl_predictions = json.load(f_sl)
