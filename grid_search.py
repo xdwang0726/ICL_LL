@@ -328,6 +328,7 @@ def main():
     parser.add_argument('--device', default='cuda', type=str)
     parser.add_argument("--seeds", type=list, default=[100,13,21,42,87])
     parser.add_argument("--dataset", type=str, default="SST-2")
+    parser.add_argument("--task_name", type=str, default=None)
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
@@ -362,7 +363,7 @@ def main():
         if torch.cuda.device_count() > 0:
             torch.cuda.manual_seed_all(seed)
 
-        label_ids = load_label(args.dataset)
+        label_ids = load_label(args.task_name)
         num_label = len(label_ids)
         collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
@@ -391,7 +392,7 @@ def main():
         print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-        save_path = os.path.join(args.out_dir, "{}_{}.json".format(args.dataset, seed))
+        save_path = os.path.join(args.out_dir, args.dataset, "{}_{}.json".format(args.dataset, seed))
         is_exit = os.path.exists(args.out_dir)
         if is_exit:
             with open(save_path, "w") as f:

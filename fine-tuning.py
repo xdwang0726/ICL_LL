@@ -256,6 +256,7 @@ def main():
     parser.add_argument('--device', default='cuda', type=str)
     parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
     parser.add_argument("--dataset", type=str, default="SST-2")
+    parser.add_argument("--task_name", type=str, default=None)
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--correct", type=int, default=100)
     parser.add_argument("--max_len", type=int, default=1024)
@@ -299,14 +300,14 @@ def main():
 
         # get tuned hyperparameter
         if not args.label_imbalance:
-            para_path = os.path.join(args.para_dir, "noisy_label", args.gpt2, "{}_{}.json".format(args.dataset, seed))
+            para_path = os.path.join(args.para_dir, "noisy_label", args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
         else:
-            para_path = os.path.join(args.para_dir, "label_imbalance", args.gpt2, "{}_{}.json".format(args.dataset, seed))
+            para_path = os.path.join(args.para_dir, "label_imbalance", args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
 
         with open(para_path, "r") as f:
             para = json.load(f)
 
-        label_ids = load_label(args.dataset)
+        label_ids = load_label(args.task_name)
         key_list = list(label_ids.keys())
         val_list = list(label_ids.values())
         num_label = len(label_ids)

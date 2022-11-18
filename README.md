@@ -30,28 +30,28 @@ python test.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --method di
 ```
 To run the evaluation of label corruption 0-75%
 ```
-python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt2-xl|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 --test_batch_size 32
+python test.py --dataset {dataset}_{75|50|25|0}_correct --gpt2 {gpt2-large|gpt2-xl|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 --test_batch_size 32 --task_name {dataset}
 ```
 
 ## Supervised Learning
 ### Grid search: search hyper-parameter for each dataset 
 gpt2:
 ```
-CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --out_dir hyperparameter/noisy_label/{gpt2-large|gpt2-xl}
+CUDA_VISIBLE_DEVICES=0 python grid_search.py  --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --out_dir hyperparameter/noisy_label/ --task_name {dataset}
 ```
 gpt-j (distributed):
 ```
-python grid_search.py  --dataset {dataset} --gpt2 {gpt-j} --out_dir hyperparameter/noisy_label/gpt-j --distributed
+python grid_search.py  --dataset {dataset} --gpt2 {gpt-j} --out_dir hyperparameter/noisy_label/gpt-j --distributed --task_name {dataset}
 ```
 
 ### Fine-tuning and do supervised learning
 gpt2:
 ```
-CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --correct {100|75|50|25|0} --result_dir supervised_learning_results/noisy_label
+CUDA_VISIBLE_DEVICES=0  python fine-tuning.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl} --correct {100|75|50|25|0} --result_dir supervised_learning_results/noisy_label --task_name {dataset}
 ```
 gpt-j (distributed):
 ```
-python fine-tuning.py --dataset {dataset} --gpt2 {gpt-j} --correct {100|75|50|25|0} --result_dir supervised_learning_results/noisy_label --distributed
+python fine-tuning.py --dataset {dataset} --gpt2 {gpt-j} --correct {100|75|50|25|0} --result_dir supervised_learning_results/noisy_label --distributed --task_name {dataset}
 ```
 
 # Label distribution 

@@ -411,15 +411,22 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     #     2: [14, 15, 16, 17, 18, 19, 20],
     #     3: [21, 22, 23, 24, 25, 26, 27],
     # }
+    # model.device_map = {
+    #     0: [0, 1, 2, 3],
+    #     1: [4, 5, 6, 7],
+    #     2: [8, 9, 10, 11],
+    #     3: [12, 13, 14, 15],
+    #     4: [16, 17, 18, 19],
+    #     5: [20, 21, 22, 23],
+    #     6: [24, 25, 26, 27],
+    # }
     # gpt2-xl
     model_config = GPT2Config.from_pretrained("gpt2-xl", output_hidden_states=False, num_labels=num_label)
     model = GPT2ClassificationParallel.from_pretrained("gpt2-xl", config=model_config)
     model.model_parallel = True
     model.device_map = {
-        0: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-        1: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-        2: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34],
-        3: [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
+        0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        1: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
     }
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
@@ -456,6 +463,7 @@ def main():
     parser.add_argument('--device', default='cuda', type=str)
     parser.add_argument("--seeds", type=list, default=[100,13,21,42,87])
     parser.add_argument("--dataset", type=str, default="SST-2")
+    parser.add_argument("--task_name", type=str, default=None)
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
     parser.add_argument("--warmup_steps", type=int, default=0)
@@ -489,7 +497,7 @@ def main():
         if torch.cuda.device_count() > 0:
             torch.cuda.manual_seed_all(seed)
 
-        label_ids = load_label(args.dataset)
+        label_ids = load_label(args.task_name)
         num_label = len(label_ids)
         collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
@@ -518,7 +526,7 @@ def main():
         print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-        save_path = os.path.join(args.out_dir, "{}_{}.json".format(args.dataset, seed))
+        save_path = os.path.join(args.out_dir, args.dataset, "{}_{}.json".format(args.dataset, seed))
         is_exit = os.path.exists(args.out_dir)
         if is_exit:
             with open(save_path, "w") as f:
