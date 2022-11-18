@@ -12,7 +12,7 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification
+from transformers import GPT2Tokenizer, AutoTokenizer, GPTJConfig, GPTJForSequenceClassification, GPT2Config, GPT2ForSequenceClassification
 from transformers import logging
 from transformers.modeling_outputs import SequenceClassifierOutputWithPast
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
@@ -274,17 +274,152 @@ class GPTJClassificationParallel(GPTJForSequenceClassification):
         torch.cuda.empty_cache()
 
 
+class GPT2ClassificationParallel(GPT2ForSequenceClassification):
+    def __int__(self, config):
+        super().__init__(config)
+
+        self.model_parallel = False
+        self.device_map = None
+
+    def forward(
+        self,
+        input_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor]]] = None,
+        attention_mask: Optional[torch.FloatTensor] = None,
+        token_type_ids: Optional[torch.LongTensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        head_mask: Optional[torch.FloatTensor] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, SequenceClassifierOutputWithPast]:
+        r"""
+        labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
+            Labels for computing the sequence classification/regression loss. Indices should be in `[0, ...,
+            config.num_labels - 1]`. If `config.num_labels == 1` a regression loss is computed (Mean-Square loss), If
+            `config.num_labels > 1` a classification loss is computed (Cross-Entropy).
+        """
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        transformer_outputs = self.transformer(
+            input_ids,
+            past_key_values=past_key_values,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        hidden_states = transformer_outputs[0]
+
+        if self.model_parallel:
+            torch.cuda.set_device(self.transformer.first_device)
+            hidden_states = hidden_states.to(self.score.weight.device)
+
+        logits = self.score(hidden_states)
+
+        if input_ids is not None:
+            batch_size, sequence_length = input_ids.shape[:2]
+        else:
+            batch_size, sequence_length = inputs_embeds.shape[:2]
+
+        assert (
+            self.config.pad_token_id is not None or batch_size == 1
+        ), "Cannot handle batch sizes > 1 if no padding token is defined."
+        if self.config.pad_token_id is None:
+            sequence_lengths = -1
+        else:
+            if input_ids is not None:
+                sequence_lengths = torch.ne(input_ids, self.config.pad_token_id).sum(-1) - 1
+            else:
+                sequence_lengths = -1
+                logger.warning(
+                    f"{self.__class__.__name__} will not detect padding tokens in `inputs_embeds`. Results may be "
+                    "unexpected if using padding tokens in conjunction with `inputs_embeds.`"
+                )
+
+        pooled_logits = logits[torch.arange(batch_size, device=logits.device), sequence_lengths]
+
+        loss = None
+        if labels is not None:
+            if self.config.problem_type is None:
+                if self.num_labels == 1:
+                    self.config.problem_type = "regression"
+                elif self.num_labels > 1 and (labels.dtype == torch.long or labels.dtype == torch.int):
+                    self.config.problem_type = "single_label_classification"
+                else:
+                    self.config.problem_type = "multi_label_classification"
+
+            if self.config.problem_type == "regression":
+                loss_fct = MSELoss()
+                if self.num_labels == 1:
+                    loss = loss_fct(pooled_logits.squeeze(), labels.squeeze())
+                else:
+                    loss = loss_fct(pooled_logits, labels)
+            elif self.config.problem_type == "single_label_classification":
+                loss_fct = CrossEntropyLoss()
+                loss = loss_fct(pooled_logits.view(-1, self.num_labels), labels.view(-1))
+            elif self.config.problem_type == "multi_label_classification":
+                loss_fct = BCEWithLogitsLoss()
+                loss = loss_fct(pooled_logits, labels)
+        if not return_dict:
+            output = (pooled_logits,) + transformer_outputs[1:]
+            return ((loss,) + output) if loss is not None else output
+
+        return SequenceClassifierOutputWithPast(
+            loss=loss,
+            logits=pooled_logits,
+            past_key_values=transformer_outputs.past_key_values,
+            hidden_states=transformer_outputs.hidden_states,
+            attentions=transformer_outputs.attentions,
+        )
+
+    def parallelize(self, device_map=None):
+        # Check validity of device_map
+        self.device_map = (
+            get_device_map(len(self.transformer.h), range(torch.cuda.device_count())) if device_map is None else device_map
+        )
+        assert_device_map(self.device_map, len(self.transformer.h))
+        self.transformer.parallelize(self.device_map)
+        self.score = self.score.to(self.transformer.first_device)
+        self.model_parallel = True
+
+    def deparallelize(self):
+        self.transformer.deparallelize()
+        self.transformer = self.transformer.to("cpu")
+        self.score = self.score.to("cpu")
+        self.model_parallel = False
+        torch.cuda.empty_cache()
+
+
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
-    model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-    model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+    # model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
+    # model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
+    # model.model_parallel = True
+    # model.device_map = {
+    #     0: [0, 1, 2, 3, 4, 5, 6],
+    #     1: [7, 8, 9, 10, 11, 12, 13],
+    #     2: [14, 15, 16, 17, 18, 19, 20],
+    #     3: [21, 22, 23, 24, 25, 26, 27],
+    # }
+    # gpt2-xl
+    model_config = GPT2Config.from_pretrained("gpt2-xl", output_hidden_states=False, num_labels=num_label)
+    model = GPT2ForSequenceClassification.from_pretrained("gpt2-xl", config=model_config)
     model.model_parallel = True
     model.device_map = {
-        0: [0, 1, 2, 3, 4, 5, 6],
-        1: [7, 8, 9, 10, 11, 12, 13],
-        2: [14, 15, 16, 17, 18, 19, 20],
-        3: [21, 22, 23, 24, 25, 26, 27],
+        0: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        1: [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        2: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34],
+        3: [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
     }
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
@@ -319,7 +454,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='cuda', type=str)
-    parser.add_argument("--seed", type=int, default=100)
+    parser.add_argument("--seeds", type=list, default=[100,13,21,42,87])
     parser.add_argument("--dataset", type=str, default="SST-2")
     parser.add_argument("--k", type=int, default=16)
     parser.add_argument("--max_len", type=int, default=1024)
@@ -347,45 +482,53 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
 
     # random seed
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    if torch.cuda.device_count() > 0:
-        torch.cuda.manual_seed_all(args.seed)
+    for seed in args.seeds:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.device_count() > 0:
+            torch.cuda.manual_seed_all(seed)
 
-    label_ids = load_label(args.dataset)
-    num_label = len(label_ids)
-    collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
+        label_ids = load_label(args.dataset)
+        num_label = len(label_ids)
+        collator = Gpt2ClassificationCollator(tokenizer=tokenizer, labels_encoder=label_ids, max_sequence_len=args.max_len)
 
-    if not args.label_imbalance:
-        train_data_path = os.path.join("data_noisy_label", args.dataset,
-                                       "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-        test_data_path = os.path.join("data_noisy_label", args.dataset,
-                                      "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
-    else:
-        train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, args.seed))
-        test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, args.seed))
+        if not args.label_imbalance:
+            train_data_path = os.path.join("data_noisy_label", args.dataset,
+                                           "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+            test_data_path = os.path.join("data_noisy_label", args.dataset,
+                                          "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
+        else:
+            train_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_train.jsonl".format(args.dataset, args.k, seed))
+            test_data_path = os.path.join("data_imbalance", "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
 
-    print("Training example path", train_data_path)
+        print("Training example path", train_data_path)
 
-    para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
-    all_paras = grid_para(para_list)
+        para_list = [[50, 100, 200], [1e-5, 2e-5, 3e-5], [2, 4, 8, 16]]
+        all_paras = grid_para(para_list)
 
-    all_f1s = []
-    for para in all_paras:
+        all_f1s = []
+        for para in all_paras:
 
-        f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator, num_label)
+            f1, model = hyperparameter_tuning(args, device, train_data_path, test_data_path, para, collator, num_label)
 
-        all_f1s.append(f1)
+            all_f1s.append(f1)
 
-    best_f1_index = np.argmax(all_f1s)
-    print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
+        best_f1_index = np.argmax(all_f1s)
+        print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-    save_path = os.path.join(args.out_dir, "{}.json".format(args.dataset))
-    with open(save_path, "w") as f:
-        json.dump(all_paras[best_f1_index], f)
-    print("Hyper-parameter saved for {}!".format(args.dataset))
+        save_path = os.path.join(args.out_dir, "{}_{}.json".format(args.dataset, seed))
+        is_exit = os.path.exists(args.out_dir)
+        if is_exit:
+            with open(save_path, "w") as f:
+                json.dump(all_paras[best_f1_index], f)
+            print("Hyper-parameter saved for {}!".format(args.dataset))
+        else:
+            os.makedirs(args.out_dir)
+            with open(save_path, "w") as f:
+                json.dump(all_paras[best_f1_index], f)
+            print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":
