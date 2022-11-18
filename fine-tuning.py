@@ -388,11 +388,11 @@ def main():
         # save the predicted labels
         predicted = [key_list[val_list.index(label)] for label in predictions_labels]
         if not args.label_imbalance:
-            save_predict = os.path.join(args.predicted_dir, "{}".format(args.dataset),
-                                     "{}_{}_correct".format(args.dataset, args.correct))
+            save_predict = os.path.join(args.predicted_dir, args.gpt2, "{}".format(args.dataset),
+                                        "{}_{}_correct".format(args.dataset, args.correct))
         else:
-            save_predict = os.path.join(args.predicted_dir, "{}".format(args.dataset),
-                                     "{}_{}".format(args.dataset, args.imbalance_level))
+            save_predict = os.path.join(args.predicted_dir, args.gpt2, "{}".format(args.dataset),
+                                        "{}_{}".format(args.dataset, args.imbalance_level))
         is_exit = os.path.exists(save_predict)
         if is_exit:
             pass
