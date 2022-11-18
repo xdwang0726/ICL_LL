@@ -413,7 +413,7 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
     # }
     # gpt2-xl
     model_config = GPT2Config.from_pretrained("gpt2-xl", output_hidden_states=False, num_labels=num_label)
-    model = GPT2ForSequenceClassification.from_pretrained("gpt2-xl", config=model_config)
+    model = GPT2ClassificationParallel.from_pretrained("gpt2-xl", config=model_config)
     model.model_parallel = True
     model.device_map = {
         0: [0, 1, 2, 3, 4, 5, 6, 7, 8],
