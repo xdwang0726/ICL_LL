@@ -8,6 +8,7 @@ def main():
 
     parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
     parser.add_argument("--correct", type=int, default=100)
+    parser.add_argument("--gpt2", type=str, default="gpt2-large")
 
     parser.add_argument("--icl_dir", type=str, default="/data/v-xindiwang/ICL_LL/out/")
     parser.add_argument("--sl_dir", type=str, default="/data/v-xindiwang/ICL_LL/supervised_learning_predictions/")
