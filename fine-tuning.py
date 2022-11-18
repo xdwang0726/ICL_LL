@@ -265,6 +265,7 @@ def main():
     parser.add_argument("--para_dir", type=str, default="hyperparameter")
     parser.add_argument("--out_dir", type=str, default="checkpoints")
     parser.add_argument("--result_dir", type=str, default="supervised_learning_results")
+    parser.add_argument("--predicted_dir", type=str, default="supervised_learning_predictions")
 
     parser.add_argument('--imbalance_level', type=str, default='low',
                         help="imbalance level of labels, choosing from low, medium, high")
@@ -306,6 +307,8 @@ def main():
             para = json.load(f)
 
         label_ids = load_label(args.dataset)
+        key_list = list(label_ids.keys())
+        val_list = list(label_ids.values())
         num_label = len(label_ids)
 
         if args.gpt2.startswith("gpt2"):
@@ -382,7 +385,23 @@ def main():
         test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
 
         test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
-        print("pre", predictions_labels)
+        # save the predicted labels
+        predicted = [key_list[val_list.index(label)] for label in predictions_labels]
+        if not args.label_imbalance:
+            save_predict = os.path.join(args.predicted_dir, "{}".format(args.dataset),
+                                     "{}_{}_correct".format(args.dataset, args.correct))
+        else:
+            save_predict = os.path.join(args.predicted_dir, "{}".format(args.dataset),
+                                     "{}_{}".format(args.dataset, args.imbalance_level))
+        is_exit = os.path.exists(save_predict)
+        if is_exit:
+            pass
+        else:
+            os.makedirs(save_predict)
+        save_predicted_path = os.path.join(save_predict, "{}_{}_{}.json".format(args.dataset, args.k, seed))
+        with open(save_predicted_path, "w") as f:
+            json.dump(predicted, f)
+
         f1 = f1_score(test_true_labels, predictions_labels, average='macro')
         performance.append(f1)
 
@@ -403,7 +422,7 @@ def main():
             pass
         else:
             os.makedirs(save_path)
-        save_result_path = os.path.join(save_path, "{}_{}_{}_{}.json".format(args.dataset, args.k, seed, args.imbalance_level))
+        save_result_path = os.path.join(save_path, "{}_{}_{}.json".format(args.dataset, args.k, seed))
         with open(save_result_path, "w") as f:
             json.dump(result, f)
 
