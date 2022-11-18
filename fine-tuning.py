@@ -382,6 +382,7 @@ def main():
         test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
 
         test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
+        print("pre", predictions_labels)
         f1 = f1_score(test_true_labels, predictions_labels, average='macro')
         performance.append(f1)
 

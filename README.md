@@ -7,7 +7,7 @@ conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c nvid
 pip install git+https://github.com/huggingface/transformers
 pip install accelerate
 pip install datasets
-pip install sklearn
+pip install -U scikit-learn
 ```
 # Preparation
 datasets are: `` ag_news``, ``glue-rte``, `` glue-sst2``, ``rotten_tomatoes``, ``trec``, ``superglue-cb``
