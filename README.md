@@ -8,7 +8,6 @@ pip install git+https://github.com/huggingface/transformers
 pip install accelerate
 pip install datasets
 pip install sklearn
-
 ```
 # Preparation
 datasets are: `` ag_news``, ``glue-rte``, `` glue-sst2``, ``rotten_tomatoes``, ``trec``, ``superglue-cb``
@@ -27,7 +26,7 @@ python create_data.py --variant {75|50|25|0}_correct --dataset {dataset}
 ## In-context Learning
 To run the evaluation of all gold labels
 ```
-python test.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 --test_batch_size 32
+python test.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --method direct --out_dir out/{model} --do_zeroshot --use_demonstrations --k 16 --seed 100,13,21,42,87 --test_batch_size 32 --task_name {dataset}
 ```
 To run the evaluation of label corruption 0-75%
 ```
