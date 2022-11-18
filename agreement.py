@@ -6,7 +6,7 @@ import os
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--seeds", type=str, default="100, 13, 21, 42, 87")
+    parser.add_argument("--seeds", type=list, default=[100, 13, 21, 42, 87])
     parser.add_argument("--correct", type=int, default=100)
     parser.add_argument("--gpt2", type=str, default="gpt2-large")
     parser.add_argument("--dataset", type=str, default="rotten_tomatoes")
