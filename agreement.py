@@ -42,3 +42,7 @@ def main():
 
     ratio = sum(total_ratio) / len(total_ratio)
     print("ratio is:", ratio)
+
+
+if __name__ == "__main__":
+    main()
