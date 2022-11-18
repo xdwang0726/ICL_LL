@@ -401,33 +401,33 @@ class GPT2ClassificationParallel(GPT2ForSequenceClassification):
 
 def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collator, num_label):
 
-    # model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
-    # model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
+    model_config = GPTJConfig.from_pretrained("EleutherAI/gpt-j-6B", num_labels=num_label)
+    model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
-    # model.model_parallel = True
+    model.model_parallel = True
     # model.device_map = {
     #     0: [0, 1, 2, 3, 4, 5, 6],
     #     1: [7, 8, 9, 10, 11, 12, 13],
     #     2: [14, 15, 16, 17, 18, 19, 20],
     #     3: [21, 22, 23, 24, 25, 26, 27],
     # }
-    # model.device_map = {
-    #     0: [0, 1, 2, 3],
-    #     1: [4, 5, 6, 7],
-    #     2: [8, 9, 10, 11],
-    #     3: [12, 13, 14, 15],
-    #     4: [16, 17, 18, 19],
-    #     5: [20, 21, 22, 23],
-    #     6: [24, 25, 26, 27],
-    # }
-    # gpt2-xl
-    model_config = GPT2Config.from_pretrained("gpt2-xl", output_hidden_states=False, num_labels=num_label)
-    model = GPT2ClassificationParallel.from_pretrained("gpt2-xl", config=model_config)
-    model.model_parallel = True
     model.device_map = {
-        0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-        1: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
+        0: [0, 1, 2, 3],
+        1: [4, 5, 6, 7],
+        2: [8, 9, 10, 11],
+        3: [12, 13, 14, 15],
+        4: [16, 17, 18, 19],
+        5: [20, 21, 22, 23],
+        6: [24, 25, 26, 27],
     }
+    # gpt2-xl
+    # model_config = GPT2Config.from_pretrained("gpt2-xl", output_hidden_states=False, num_labels=num_label)
+    # model = GPT2ClassificationParallel.from_pretrained("gpt2-xl", config=model_config)
+    # model.model_parallel = True
+    # model.device_map = {
+    #     0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+    #     1: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47],
+    # }
     model.config.pad_token_id = model.config.eos_token_id
     model.to(device)
     model.parallelize(model.device_map)
