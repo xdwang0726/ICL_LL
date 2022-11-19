@@ -424,11 +424,20 @@ def hyperparameter_tuning(args, device, train_path, test_path, para_dict, collat
         model = GPTJClassificationParallel.from_pretrained("EleutherAI/gpt-j-6B", low_cpu_mem_usage=True, config=model_config)
 
         model.model_parallel = True
+        # model.device_map = {
+        #     0: [0, 1, 2, 3, 4, 5, 6],
+        #     1: [7, 8, 9, 10, 11, 12, 13],
+        #     2: [14, 15, 16, 17, 18, 19, 20],
+        #     3: [21, 22, 23, 24, 25, 26, 27],
+        # }
         model.device_map = {
-            0: [0, 1, 2, 3, 4, 5, 6],
-            1: [7, 8, 9, 10, 11, 12, 13],
-            2: [14, 15, 16, 17, 18, 19, 20],
-            3: [21, 22, 23, 24, 25, 26, 27],
+            0: [0, 1, 2, 3],
+            1: [4, 5, 6, 7],
+            2: [8, 9, 10, 11],
+            3: [12, 13, 14, 15],
+            4: [16, 17, 18, 19],
+            5: [20, 21, 22, 23],
+            6: [24, 25, 26, 27],
         }
 
         model.config.pad_token_id = model.config.eos_token_id
@@ -531,14 +540,14 @@ def main():
         print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-        save_path = os.path.join(args.out_dir, args.dataset, "{}_{}.json".format(args.dataset, seed))
-        is_exit = os.path.exists(os.path.join(args.out_dir, args.dataset))
+        save_path = os.path.join(args.out_dir, args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
+        is_exit = os.path.exists(os.path.join(args.out_dir, args.gpt2, args.dataset))
         if is_exit:
             with open(save_path, "w") as f:
                 json.dump(all_paras[best_f1_index], f)
             print("Hyper-parameter saved for {}!".format(args.dataset))
         else:
-            os.makedirs(os.path.join(args.out_dir, args.dataset))
+            os.makedirs(os.path.join(args.out_dir, args.gpt2, args.dataset))
             with open(save_path, "w") as f:
                 json.dump(all_paras[best_f1_index], f)
             print("Hyper-parameter saved for {}!".format(args.dataset))

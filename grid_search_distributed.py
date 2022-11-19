@@ -526,14 +526,14 @@ def main():
         print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-        save_path = os.path.join(args.out_dir, args.dataset, "{}_{}.json".format(args.dataset, seed))
-        is_exit = os.path.exists(os.path.join(args.out_dir, args.dataset))
+        save_path = os.path.join(args.out_dir, args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
+        is_exit = os.path.exists(os.path.join(args.out_dir, args.gpt2, args.dataset))
         if is_exit:
             with open(save_path, "w") as f:
                 json.dump(all_paras[best_f1_index], f)
             print("Hyper-parameter saved for {}!".format(args.dataset))
         else:
-            os.makedirs(os.path.join(args.out_dir, args.dataset))
+            os.makedirs(os.path.join(args.out_dir, args.gpt2, args.dataset))
             with open(save_path, "w") as f:
                 json.dump(all_paras[best_f1_index], f)
             print("Hyper-parameter saved for {}!".format(args.dataset))
