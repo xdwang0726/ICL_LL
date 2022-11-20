@@ -519,10 +519,10 @@ def main():
             all_acc['train_acc'].append(train_acc)
 
         # save(args, model, seed)
-        if args.distributed:
-            model.deparallelize()
-            model.to(device)
-            model.parallelize(model.device_map)
+        # if args.distributed:
+        #     model.deparallelize()
+        #     model.to(device)
+        #     model.parallelize(model.device_map)
 
         print("Starting testing!")
         if not args.label_imbalance:
