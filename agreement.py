@@ -18,7 +18,11 @@ def main():
 
     total_ratio = []
     for seed in args.seeds:
-        icl_dir = os.path.join(args.icl_dir, args.gpt2, "{}-test-direct-k=16-s={}-no-newlines.txt".format(args.dataset, seed))
+        if args.gpt2.startswith("gpt2"):
+            icl_dir = os.path.join(args.icl_dir, args.gpt2, "{}-test-direct-k=16-s={}-no-newlines.txt".format(args.dataset, seed))
+        else:
+            icl_dir = os.path.join(args.icl_dir, args.gpt2,
+                                   "{}-test-direct-k=16-s={}.txt".format(args.dataset, seed))
         icl_predictions = []
         with open(icl_dir, "r") as f:
             lines = f.readlines()
