@@ -565,10 +565,10 @@ def main():
         print("Macro-F1 of %s at seed %d with %s imbalance level: %.1f " % (args.dataset, seed, args.imbalance_level, f1*100))
         result = {"dataset": args.dataset, "result": f1}
         if not args.label_imbalance:
-            save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+            save_path = os.path.join(args.result_dir, args.gpt2, "{}".format(args.dataset),
                                      "{}_{}_correct".format(args.dataset, args.correct))
         else:
-            save_path = os.path.join(args.result_dir, "{}".format(args.dataset),
+            save_path = os.path.join(args.result_dir, args.gpt2, "{}".format(args.dataset),
                                      "{}_{}".format(args.dataset, args.imbalance_level))
 
         is_exit = os.path.exists(save_path)
