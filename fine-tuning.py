@@ -536,7 +536,7 @@ def main():
                                           "{}_{}_{}_test.jsonl".format(args.dataset, args.k, seed))
 
         test_dataset = ICLData(test_data_path)
-        test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=True, collate_fn=collator)
+        test_dataloader = DataLoader(test_dataset, batch_size=para["bs"], shuffle=False, collate_fn=collator)
 
         test_true_labels, predictions_labels, avg_epoch_loss = test(model, test_dataloader, device)
         # save the predicted labels
