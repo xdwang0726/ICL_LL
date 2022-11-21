@@ -83,3 +83,17 @@ gptj (distributed):
 ```
 python fine-tuning.py --dataset {dataset} --gpt2 {gpt-j} --label_imbalance --imbalance_level {low|medium|high} --result_dir supervised_learning_results/label_imbalance --distributed
 ```
+# Analysis
+## Attention Score
+### noisy label
+```
+python attention_score_noisy.py --gpt2 {gpt2-large|gpt2-xl|gpt-j} --dataset {dataset} --dir {data_dir}
+```
+### label imbalance
+```
+python attention_score_imbalance.py --gpt2 {gpt2-large|gpt2-xl|gpt-j} --dataset {dataset} --dir {data_dir}
+```
+## Agreement
+```
+python agreement.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --correct {100|75|50|25|0} --icl_dir {icl_dir} --sl_dir {sl_dir}
+```
