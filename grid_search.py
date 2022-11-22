@@ -540,17 +540,30 @@ def main():
         print("Dataset {}: finish hyperparameter tuning with {}".format(args.dataset, all_paras[best_f1_index]))
 
     # save hyper-parameter
-        save_path = os.path.join(args.out_dir, args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
-        is_exit = os.path.exists(os.path.join(args.out_dir, args.gpt2, args.dataset))
-        if is_exit:
-            with open(save_path, "w") as f:
-                json.dump(all_paras[best_f1_index], f)
-            print("Hyper-parameter saved for {}!".format(args.dataset))
+        if not args.label_imbalance:
+            save_path = os.path.join(args.out_dir, args.gpt2, args.dataset, "{}_{}.json".format(args.dataset, seed))
+            is_exit = os.path.exists(os.path.join(args.out_dir, args.gpt2, args.dataset))
+            if is_exit:
+                with open(save_path, "w") as f:
+                    json.dump(all_paras[best_f1_index], f)
+                print("Hyper-parameter saved for {}!".format(args.dataset))
+            else:
+                os.makedirs(os.path.join(args.out_dir, args.gpt2, args.dataset))
+                with open(save_path, "w") as f:
+                    json.dump(all_paras[best_f1_index], f)
+                print("Hyper-parameter saved for {}!".format(args.dataset))
         else:
-            os.makedirs(os.path.join(args.out_dir, args.gpt2, args.dataset))
-            with open(save_path, "w") as f:
-                json.dump(all_paras[best_f1_index], f)
-            print("Hyper-parameter saved for {}!".format(args.dataset))
+            save_path = os.path.join(args.out_dir, args.gpt2, "{}_{}".format(args.dataset, args.imbalance_level), "{}_{}.json".format(args.dataset, seed))
+            is_exit = os.path.exists(os.path.join(args.out_dir, args.gpt2, "{}_{}".format(args.dataset, args.imbalance_level)))
+            if is_exit:
+                with open(save_path, "w") as f:
+                    json.dump(all_paras[best_f1_index], f)
+                print("Hyper-parameter saved for {}!".format(args.dataset))
+            else:
+                os.makedirs(os.path.join(args.out_dir, args.gpt2, "{}_{}".format(args.dataset, args.imbalance_level)))
+                with open(save_path, "w") as f:
+                    json.dump(all_paras[best_f1_index], f)
+                print("Hyper-parameter saved for {}!".format(args.dataset))
 
 
 if __name__ == "__main__":
