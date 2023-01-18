@@ -3,7 +3,6 @@ import os
 
 from transformers import AutoModelForCausalLM, AutoModel
 from transformers import GPT2Tokenizer, AutoTokenizer
-from bertviz import head_view
 import torch
 import json
 import random
@@ -105,7 +104,7 @@ def main():
     corrupted_scores = []
 
     i = 0
-    while i < 20:
+    while i < 50:
         corrupted_index = [4]
         # select one positive and one negative example from the demonstration examples
         correct_demonstration = random.sample(correct_examples, k=4)
@@ -184,7 +183,7 @@ def main():
     corrupted_scores = []
 
     i = 0
-    while i < 20:
+    while i < 50:
         corrupted_index = [3, 4]
         # select one positive and one negative example from the demonstration examples
         correct_demonstration = random.sample(correct_examples, k=3)
@@ -262,7 +261,7 @@ def main():
     corrupted_scores = []
 
     i = 0
-    while i < 20:
+    while i < 50:
         corrupted_index = [2, 3, 4]
         # select one positive and one negative example from the demonstration examples
         correct_demonstration = random.sample(correct_examples, k=2)
@@ -338,7 +337,7 @@ def main():
     scores = []
 
     i = 0
-    while i < 20:
+    while i < 50:
         # select one positive and one negative example from the demonstration examples
         corrupted_index = [1, 2, 3, 4]
         # select one positive and one negative example from the demonstration examples
@@ -414,7 +413,7 @@ def main():
     scores = []
 
     i = 0
-    while i < 20:
+    while i < 50:
         # select one positive and one negative example from the demonstration examples
         corrupted_demonstration = random.sample(corrupted_examples, k=5)
         corrupted = "".join(corrupted_demonstration)
