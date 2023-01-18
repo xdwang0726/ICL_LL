@@ -26,7 +26,7 @@ def main():
 
     # random select demonstration examples
     correct_demonstration_data_dir = os.path.join(args.dir, args.dataset, "{}_16_100_train.jsonl".format(args.dataset))
-    corrputed_demonstration_data_dir = os.path.join(args.dir, "{}_{}_correct".format(args.dataset, args.correct), "{}_{}_16_21_train.jsonl".format(args.dataset, args.correct))
+    corrputed_demonstration_data_dir = os.path.join(args.dir, "{}_{}_correct".format(args.dataset, args.correct), "{}_{}_correct_16_21_train.jsonl".format(args.dataset, args.correct))
     correct_examples = []
     corrupted_examples = []
     with open(correct_demonstration_data_dir, "r") as f:
