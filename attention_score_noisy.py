@@ -25,8 +25,8 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # random select demonstration examples
-    correct_demonstration_data_dir = os.path.join(args.dir, args.dataset, "{}_16_100_train.jsonal".format(args.dataset))
-    corrputed_demonstration_data_dir = os.path.join(args.dir, "{}_{}_correct".format(args.dataset, args.correct), "{}_{}_16_21_train.jsonal".format(args.dataset, args.correct))
+    correct_demonstration_data_dir = os.path.join(args.dir, args.dataset, "{}_16_100_train.jsonl".format(args.dataset))
+    corrputed_demonstration_data_dir = os.path.join(args.dir, "{}_{}_correct".format(args.dataset, args.correct), "{}_{}_16_21_train.jsonl".format(args.dataset, args.correct))
     correct_examples = []
     corrupted_examples = []
     with open(correct_demonstration_data_dir, "r") as f:
@@ -40,7 +40,7 @@ def main():
             corrupted_examples.append(dp["input"] + " \n " + dp["output"] + " \n\n ")
 
     examples = []
-    test_data_dir = os.path.join(args.dir, args.dataset, "{}_16_100_test.jsonal".format(args.dataset))
+    test_data_dir = os.path.join(args.dir, args.dataset, "{}_16_100_test.jsonl".format(args.dataset))
     with open(test_data_dir, "r") as f:
         for line in f:
             dp = json.loads(line)
