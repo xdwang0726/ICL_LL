@@ -1,3 +1,5 @@
+# Investigating the Learning Behaviour of In-context Learning:  A Comparison with Supervised Learning
+This repository contains the implementations of our paper Investigating the Learning Behaviour of In-context Learning:  A Comparison with Supervised Learning in ECAI 2023. 
 
 # Installing dependencies
 ```
@@ -96,4 +98,9 @@ python attention_score_imbalance.py --gpt2 {gpt2-large|gpt2-xl|gpt-j} --dataset 
 ## Agreement
 ```
 python agreement.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --correct {100|75|50|25|0} --icl_dir {icl_dir} --sl_dir {sl_dir}
+```
+
+# Citation 
+If you use our codes in your work, please consider citing our paper：
+```
 ```
