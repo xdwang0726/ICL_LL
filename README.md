@@ -1,5 +1,5 @@
 # Investigating the Learning Behaviour of In-context Learning:  A Comparison with Supervised Learning
-This repository contains the implementations of our paper at ECAI 2023: "Investigating the Learning Behaviour of In-context Learning:  A Comparison with Supervised Learning". 
+This repository contains the implementations of our paper at ECAI 2023: "Investigating the Learning Behaviour of In-context Learning:  A Comparison with Supervised Learning". If you have any questions, feel free to contact us at: xwang842@uwo.ca
 
 # Installing dependencies
 ```
