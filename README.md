@@ -102,5 +102,10 @@ python agreement.py --dataset {dataset} --gpt2 {gpt2-large|gpt2-xl|gpt-j} --corr
 
 # Citation 
 If you use our codes in your work, please consider citing our paper：
-```
+@article{wang2023investigating,
+  title={Investigating the learning behaviour of in-context learning: a comparison with supervised learning},
+  author={Wang, Xindi and Wang, Yufei and Xu, Can and Geng, Xiubo and Zhang, Bowen and Tao, Chongyang and Rudzicz, Frank and Mercer, Robert E and Jiang, Daxin},
+  journal={arXiv preprint arXiv:2307.15411},
+  year={2023}
+}
 ```
